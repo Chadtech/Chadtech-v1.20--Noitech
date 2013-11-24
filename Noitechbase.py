@@ -196,28 +196,36 @@ def buildFile(song): #Turns input 'song' into .wav file.
 				if yit%(int(len(song))/100)==0:
 					percent += 1
 					print percent, '%', song[yit]
+	print fileName, 'is done'
 	noise_output.close()
 
 #--------------------------------Effects
+
+def creatMany(durRay,many,space):
+	outRay = durRay
+	orig = []
+	for yit in range(len(outRay)):
+		orig.append(outRay[yit])
+	for yit in range(many*space):
+		outRay.append(0.)
+		print 'THIS HAPPENED', len(outRay), len(orig)
+	for vapp in range(many):
+		for dukh in range(len(orig)):
+			outRay[dukh+(vapp*space)]+=orig[dukh]
+	return outRay
 
 def bitReduc(durRay,divs):
 	outRay = durRay
 	ave = 0
 	for yit in range(divs-(len(outRay)%divs)):
-		append.outRay(0.)
+		outRay.append(0.)
 	for vapp in range(len(outRay)/divs):
 		for gno in range(divs):
 			ave+=outRay[(vapp*divs)+gno]
 		ave=ave/divs
 		for gno in range(divs):
 			outRay[(vapp*divs)+gno]=ave
-	return bitReduc
-
-#def triReduc(durRay,divs):
-#	outRay=durRay
-#	outRay=bitReduce(outRay,divs)
-
-
+	return outRay
 
 def cutOff(durRay,volCut):
 	outRay = durRay
@@ -232,14 +240,16 @@ def cutOff(durRay,volCut):
 def volProf(durRay,volProf):
 	inRay=durRay
 	for vapp in range(len(volProf)):
-		endVol, dur, whereAt = volProf[vapp]
-		whereAt = whereAt*(noteDur/oneSec)*sampleRate
-		dur = dur*(noteDur/oneSec)*sampleRate
-		rOR = (1000-endVol)/dur
+		startVol, endVol, dur, whereAt = volProf[vapp]
+		whereAt = int(whereAt*(noteDur/oneSec)*sampleRate)
+		dur = int(dur*(noteDur/oneSec)*sampleRate)
+		startVol = startVol/1000.
+		endVol = endVol/1000.
 		for yit in range(dur):
-			inRay[whereAt+yit] = inRay[whereAt+yit]*(1000.-rOR*yit)
+			#print dur, whereAt, yit, whereAt+yit, len(inRay)
+			inRay[whereAt+yit]=inRay[whereAt+yit]*(startVol+((endVol-startVol)/dur)*yit)
 		for yit in range(len(inRay)-(whereAt+dur)):
-			inRay[yit+whereAt+dur] = inRay[yit+whereAt+dur]*(endVol/1000.)
+			inRay[yit+dur]=inRay[yit+dur]*endVol
 	return inRay
 
 
@@ -259,7 +269,7 @@ def volDrop(durRay,volPert): #Change the volume for an array as a whole values l
 		outRay.append(inRay[vapp]*volPert)
 		if vapp%((int(len(inRay)))/100)==0:
 			percent += 1
-			print percent, '%', 'VOLDROP'
+			print percent, '%', 'volDrop'
 	return outRay
 
 def reverse(durRay): #Reverse the array
@@ -490,7 +500,6 @@ def twthre(durRay,source,ear,room,loss,howMuchNoise,aftaNoise,allpass): #How dur
 		if gno%((int(len(inRay)))/100)==0:
 			percent += 1
 			print percent, '%', 'TWTHRE'
-
 	return outRay
 
 def lopass(durRay,cutov):
@@ -498,578 +507,3 @@ def lopass(durRay,cutov):
 	for vapp in range(len(durRay)-1):
 		outRay[vapp]=((outRay[vapp]+outRay[vapp+1])**(1+cutov/1000))/2
 	return outRay
-
-
-# Write a little song below!!!!!!!!!!!! -----v
-
-firsHarmFak = [(1./1.,250,996.),(3./2.,175,985.),(3./1.,100,94.),(4./1.,125,985.)]
-
-gameGongLA = [(ONon/ONon,250,999.85),(SETHfifo/ONon,50,999.82),(SEfi/ONon,20,999.83)]
-gameGongLB = [(ONon/ONon,200,999.81),(SETHfifo/ONon,200,999.82),(SEfi/ONon,100,999.83)]
-gameGongLC = [(ONon/ONon,200,999.81),(SETHfifo/ONon,200,999.82),(SEfi/ONon,100,999.83)]
-
-ONongameGong =harmize(ONon/2,gameGongLA,8)
-THtwgameGong =harmize(THtw/2,gameGongLA,8)
-NIeigameGong =harmize(NIei,gameGongLB,8)
-SEfogameGongL =harmize(SEfo,gameGongLB,8)
-SEfogameGongS =harmize(SEfo,gameGongLB,2)
-
-ONongameGong = volDrop(ONongameGong,1000.)
-THtwgameGong = volDrop(THtwgameGong,1000.)
-NIeigameGong = volDrop(NIeigameGong,1000.)
-SEfogameGongL = volDrop(SEfogameGongL,1000.)
-
-ONongameGongRev = onthre(ONongameGong,(80,80,10),(17,13,3),(100,100,20),800,0,0,8)
-ONongameGongRev = onthre(ONongameGongRev,(80,80,10),(17,13,3),(100,100,20),800,0,0,8)
-ONongameGongRev = volDrop(ONongameGongRev,500.)
-
-gameDink = [(1./1.,250,980.),(2./1.,100,990.),(4./1.,50,990.),(8.,25,990.)]
-
-ONonTTTTEIink =harmize(ONon*8,gameDink,4)
-ONonTTTTTWdink =harmize(ONon*2,gameDink,4)
-
-gameDinkr = [(1./1.,250,980.),(2./1.,100,990.),(4./1.,50,990.),(8./1.,25,990.),(3./1.,50,950.),(3./2.,50,970.),(8.,50,970.)]
-
-ONonTTTTfogameDinker = harmize(ONon*16,gameDinkr,8)
-
-basd = openFile('NP_kick2.wav')
-print 'open file'
-hat = openFile('hat_RSM2.wav')
-print 'open file'
-hatE = openFile('hat_RSM3.wav')
-print 'open file'
-snar = openFile('snare_DEMPP2.wav')
-print 'open file'
-snarM = openFile('snare_DEMPP3.wav')
-print 'open file'
-snarA = openFile('snare_DEMPP4.wav')
-print 'open file'
-snarREVREV = openFile('snare_DEMPP2rev.wav')
-print 'open file'
-
-print 'volDrop'
-basd = volDrop(basd,500.)
-print 'snarQ'
-snarQ = volDrop(snar,20.)
-print 'snarMed'
-snarMed = onthre(snar,(80,80,10),(17,13,3),(100,100,20),800,0,0,8)
-#snarMed = onthre(snarMed,(80,80,10),(17,13,3),(100,100,20),800,0,0,8)
-snarMed = volDrop(snarMed,200.)
-print 'snarL'
-snarL = volDrop(snar,500.)
-print 'snarREVREVQ'
-snarREVREVQ = volDrop(snarREVREV,30.)
-print 'snarMQ'
-snarMQ = volDrop(snarM,15.)
-print 'make song'
-drso = makeSong(80)
-
-snarONA=volDrop(snar,40)
-snarONB=volDrop(snar,80)
-snarONC=volDrop(snar,160)
-snarONA=volDrop(snar,320)
-
-snarMONA=volDrop(snarM,40)
-snarMONB=volDrop(snarM,80)
-snarMONC=volDrop(snarM,160)
-snarMONA=volDrop(snarM,320)
-
-snarAONA=volDrop(snarA,40)
-snarAONB=volDrop(snarA,80)
-snarAONC=volDrop(snarA,160)
-snarAONA=volDrop(snarA,320)
-
-hatZ=volDrop(hat,20)
-hatA=volDrop(hat,40)
-hatB=volDrop(hat,80)
-hatC=volDrop(hat,160)
-hatD=volDrop(hat,320)
-
-hatEZ=volDrop(hatE,20)
-hatEA=volDrop(hatE,40)
-hatEB=volDrop(hatE,80)
-hatEC=volDrop(hatE,160)
-hatED=volDrop(hatE,320)
-
-Mea = 0 #Measure 0 @0 8 Beats long
-buildSong(Mea,basd,drso)
-buildSong(Mea+0.125,basd,drso)
-buildSong(Mea+0.25,basd,drso)
-buildSong(Mea+0.375,basd,drso)
-buildSong(Mea+0.5,basd,drso)
-buildSong(Mea+0.625,basd,drso)
-buildSong(Mea+0.75,basd,drso)
-buildSong(Mea+0.875,basd,drso)
-buildSong(Mea+1,basd,drso)
-buildSong(Mea+1.125,basd,drso)
-buildSong(Mea+1.25,basd,drso)
-buildSong(Mea+1.375,basd,drso)
-buildSong(Mea+1.5,basd,drso)
-buildSong(Mea+1.625,basd,drso)
-buildSong(Mea+1.75,basd,drso)
-buildSong(Mea+1.875,basd,drso)
-
-buildSong(Mea+2,ONongameGong,drso)
-
-buildSong(Mea+4,basd,drso)
-buildSong(Mea+4.125,basd,drso)
-buildSong(Mea+4.25,basd,drso)
-buildSong(Mea+4.375,basd,drso)
-buildSong(Mea+4.5,basd,drso)
-buildSong(Mea+4.625,basd,drso)
-buildSong(Mea+4.75,basd,drso)
-buildSong(Mea+4.875,basd,drso)
-buildSong(Mea+5,basd,drso)
-buildSong(Mea+5.125,basd,drso)
-buildSong(Mea+5.25,basd,drso)
-buildSong(Mea+5.375,basd,drso)
-buildSong(Mea+5.5,basd,drso)
-buildSong(Mea+5.625,basd,drso)
-buildSong(Mea+5.75,basd,drso)
-buildSong(Mea+5.875,basd,drso)
-buildSong(Mea+6,snarQ,drso) 
-buildSong(Mea+6,ONONgameGong,drso)
-buildSong(Mea+6.333,snarQ,drso)
-buildSong(Mea+6.333,THtwgameGong,drso)
-buildSong(Mea+6.50,snarQ,drso)
-buildSong(Mea+6.75,snarQ,drso)
-buildSong(Mea+7,NIeigameGong,drso)
-buildSong(Mea+7.166,snarQ,drso)
-buildSong(Mea+7.333,snarQ,drso)
-buildSong(Mea+7.5,snarQ,drso)
-
-Mea=8 #Measure 1 @0 8 Beats long
-
-buildSong(Mea,snarMed,drso)
-buildSong(Mea+0.083,snarQ,drso)
-buildSong(Mea+0.167,snarQ,drso)
-buildSong(Mea+0.25,snarQ,drso)
-buildSong(Mea+0.333,snarQ,drso)
-buildSong(Mea+0.417,snarQ,drso)
-buildSong(Mea+0.5,snarQ,drso)
-buildSong(Mea+0.583,snarQ,drso)
-buildSong(Mea+0.667,snarQ,drso)
-buildSong(Mea+0.667,snarREVREVQ,drso)
-buildSong(Mea+0.75,snarMQ,drso)
-buildSong(Mea+0.833,snarQ,drso)
-buildSong(Mea+0.917,snarMQ,drso)
-
-buildSong(Mea+1,snarQ,drso)
-buildSong(Mea+1.083,snarQ,drso)
-buildSong(Mea+1.167,snarQ,drso)
-buildSong(Mea+1.25,snarQ,drso)
-buildSong(Mea+1.333,snarQ,drso)
-buildSong(Mea+1.417,snarQ,drso)
-buildSong(Mea+1.5,snarQ,drso)
-buildSong(Mea+1.583,snarQ,drso)
-buildSong(Mea+1.667,snarQ,drso)
-buildSong(Mea+1.75,snarQ,drso)
-buildSong(Mea+1.833,snarQ,drso)
-buildSong(Mea+1.833,snarREVREVQ,drso)
-buildSong(Mea+1.917,snarQ,drso)
-buildSong(Mea+1.917,snarREVREVQ,drso)
-
-buildSong(Mea,snarMed,drso)
-buildSong(Mea+4.083,snarQ,drso)
-buildSong(Mea+4.167,snarQ,drso)
-buildSong(Mea+4.25,snarQ,drso)
-buildSong(Mea+4.333,snarQ,drso)
-buildSong(Mea+4.417,snarQ,drso)
-buildSong(Mea+4.5,snarQ,drso)
-buildSong(Mea+4.583,snarQ,drso)
-buildSong(Mea+4.667,snarQ,drso)
-buildSong(Mea+4.667,snarREVREVQ,drso)
-buildSong(Mea+4.75,snarMQ,drso)
-buildSong(Mea+4.833,snarQ,drso)
-buildSong(Mea+4.917,snarMQ,drso)
-
-buildSong(Mea+5,snarQ,drso)
-buildSong(Mea+5.083,snarQ,drso)
-buildSong(Mea+5.167,snarQ,drso)
-buildSong(Mea+5.25,snarQ,drso)
-buildSong(Mea+5.333,snarQ,drso)
-buildSong(Mea+5.417,snarQ,drso)
-buildSong(Mea+5.5,snarQ,drso)
-buildSong(Mea+5.583,snarQ,drso)
-buildSong(Mea+5.667,snarQ,drso)
-buildSong(Mea+5.75,snarQ,drso)
-buildSong(Mea+5.833,snarQ,drso)
-buildSong(Mea+5.833,snarREVREVQ,drso)
-buildSong(Mea+5.917,snarQ,drso)
-buildSong(Mea+5.917,snarREVREVQ,drso)
-
-Mea=16#Measure 2 @8 8 beats long
-
-buildSong(Mea+0,snarL,drso)
-buildSong(Mea+0.125,snarL,drso)
-buildSong(Mea+0.25,snarL,drso)
-buildSong(Mea+0.375,snarL,drso)
-buildSong(Mea+0.5,snarL,drso)
-buildSong(Mea+0.625,snarL,drso)
-buildSong(Mea+0.75,snarL,drso)
-buildSong(Mea+0.875,snarL,drso)
-buildSong(Mea+1,snarL,drso)
-buildSong(Mea+1.125,snarL,drso)
-buildSong(Mea+1.25,snarL,drso)
-buildSong(Mea+1.375,snarL,drso)
-buildSong(Mea+1.5,snarL,drso)
-buildSong(Mea+1.625,snarL,drso)
-buildSong(Mea+1.75,snarL,drso)
-buildSong(Mea+1.875,snarL,drso)
-buildSong(Mea+2,SEfogameGongS,drso)
-
-buildSong(Mea+4,snarL,drso)
-buildSong(Mea+4.125,snarL,drso)
-buildSong(Mea+4.25,snarL,drso)
-buildSong(Mea+4.375,snarL,drso)
-buildSong(Mea+4.5,snarL,drso)
-buildSong(Mea+4.625,snarL,drso)
-buildSong(Mea+4.75,snarL,drso)
-buildSong(Mea+4.875,snarL,drso)
-buildSong(Mea+5,snarL,drso)
-buildSong(Mea+5.125,snarL,drso)
-buildSong(Mea+5.25,snarL,drso)
-buildSong(Mea+5.375,snarL,drso)
-buildSong(Mea+5.5,snarL,drso)
-buildSong(Mea+5.625,snarL,drso)
-buildSong(Mea+5.75,snarL,drso)
-buildSong(Mea+5.875,snarL,drso)
-buildSong(Mea+6,snarL,drso)
-buildSong(Mea+6,SEfogameGongS,drso)
-buildSong(Mea+6.125,snarL,drso)
-buildSong(Mea+6.25,snarL,drso)
-buildSong(Mea+6.375,snarL,drso)
-buildSong(Mea+6.5,snarL,drso)
-buildSong(Mea+6.625,snarL,drso)
-buildSong(Mea+6.75,snarL,drso)
-buildSong(Mea+6.875,snarL,drso)
-buildSong(Mea+7,snarL,drso)
-buildSong(Mea+7.125,snarL,drso)
-buildSong(Mea+7.25,snarL,drso)
-buildSong(Mea+7.375,snarL,drso)
-buildSong(Mea+7.5,snarL,drso)
-buildSong(Mea+7.625,snarL,drso)
-buildSong(Mea+7.75,snarL,drso)
-buildSong(Mea+7.875,snarL,drso)
-
-Mea=24
-buildSong(Mea,ONongameGong,drso)
-buildSong(Mea+2,hatZ,drso)
-buildSong(Mea+2+(1./12),hatEZ,drso)
-buildSong(Mea+2+(2./12),hatZ,drso)
-buildSong(Mea+2+(3./12),hatZ,drso)
-buildSong(Mea+2+(4./12),hatZ,drso)
-buildSong(Mea+2+(5./12),hatZ,drso)
-buildSong(Mea+2+(6./12),hatEZ,drso)
-buildSong(Mea+2+(7./12),hatZ,drso)
-buildSong(Mea+2+(8./12),hatZ,drso)
-buildSong(Mea+2+(9./12),hatZ,drso)
-buildSong(Mea+2+(10./12),hatEZ,drso)
-buildSong(Mea+2+(11./12),hatEZ,drso)
-buildSong(Mea+3,hatZ,drso)
-buildSong(Mea+3+(1./12),hatZ,drso)
-buildSong(Mea+3+(2./12),hatZ,drso)
-buildSong(Mea+3+(3./12),hatZ,drso)
-buildSong(Mea+3+(4./12),hatZ,drso)
-buildSong(Mea+3+(5./12),hatEZ,drso)
-buildSong(Mea+3+(6./12),hatEZ,drso)
-buildSong(Mea+3+(7./12),hatEZ,drso)
-buildSong(Mea+3+(8./12),hatEZ,drso)
-buildSong(Mea+3+(9./12),hatEZ,drso)
-buildSong(Mea+3+(10./12),hatEZ,drso)
-buildSong(Mea+3+(11./12),hatEZ,drso)
-buildSong(Mea+4,ONongameGong,drso)
-buildSong(Mea+4,hatZ,drso)
-buildSong(Mea+4+(1./12),hatZ,drso)
-buildSong(Mea+4+(2./12),hatZ,drso)
-buildSong(Mea+4+(3./12),hatZ,drso)
-buildSong(Mea+4+(4./12),hatZ,drso)
-buildSong(Mea+4+(5./12),hatZ,drso)
-buildSong(Mea+4+(6./12),hatZ,drso)
-buildSong(Mea+4+(7./12),hatZ,drso)
-buildSong(Mea+4+(8./12),hatZ,drso)
-buildSong(Mea+4+(9./12),hatZ,drso)
-buildSong(Mea+4+(10./12),hatZ,drso)
-buildSong(Mea+4+(11./12),hatZ,drso)
-buildSong(Mea+5,ONonTTTTTWdink,drso)
-buildSong(Mea+5,hatZ,drso)
-buildSong(Mea+5+(1./16),hatZ,drso)
-buildSong(Mea+5+(2./16),hatZ,drso)
-buildSong(Mea+5+(3./16),hatZ,drso)
-buildSong(Mea+5+(4./16),hatZ,drso)
-buildSong(Mea+5+(5./16),hatZ,drso)
-buildSong(Mea+5+(6./16),hatZ,drso)
-buildSong(Mea+5+(7./16),hatZ,drso)
-buildSong(Mea+5+(8./16),hatZ,drso)
-buildSong(Mea+5+(9./16),hatZ,drso)
-buildSong(Mea+5+(10./16),hatZ,drso)
-buildSong(Mea+5+(11./16),hatZ,drso)
-buildSong(Mea+5+(12./16),hatZ,drso)
-buildSong(Mea+5+(13./16),hatZ,drso)
-buildSong(Mea+5+(14./16),hatZ,drso)
-buildSong(Mea+5+(15./16),hatZ,drso)
-buildSong(Mea+6,hatZ,drso)
-buildSong(Mea+6+(1./16),hatZ,drso)
-buildSong(Mea+6+(2./16),hatZ,drso)
-buildSong(Mea+6+(3./16),hatZ,drso)
-buildSong(Mea+6+(4./16),hatZ,drso)
-buildSong(Mea+6+(5./16),hatZ,drso)
-buildSong(Mea+6+(6./16),hatZ,drso)
-buildSong(Mea+6+(7./16),hatZ,drso)
-buildSong(Mea+6+(8./16),hatZ,drso)
-buildSong(Mea+6+(9./16),hatZ,drso)
-buildSong(Mea+6+(10./16),hatZ,drso)
-buildSong(Mea+6+(11./16),hatZ,drso)
-buildSong(Mea+6+(12./16),hatZ,drso)
-buildSong(Mea+6+(13./16),hatZ,drso)
-buildSong(Mea+6+(14./16),hatZ,drso)
-buildSong(Mea+6+(15./16),hatZ,drso)
-
-
-
-Mea=32
-
-buildSong(Mea,hatC,drso)
-buildSong(Mea+(1./16),hatZ,drso)
-buildSong(Mea+(2./16),hatZ,drso)
-buildSong(Mea+(3./16),hatZ,drso)
-buildSong(Mea+(4./16),hatZ,drso)
-buildSong(Mea+(5./16),hatZ,drso)
-buildSong(Mea+(6./16),hatZ,drso)
-buildSong(Mea+(7./16),hatZ,drso)
-buildSong(Mea+(8./16),hatZ,drso)
-buildSong(Mea+(9./16),hatZ,drso)
-buildSong(Mea+(10./16),hatC,drso)
-buildSong(Mea+(11./16),hatZ,drso)
-buildSong(Mea+(12./16),hatZ,drso)
-buildSong(Mea+(13./16),hatC,drso)
-buildSong(Mea+(14./16),hatZ,drso)
-buildSong(Mea+(15./16),hatZ,drso)
-
-buildSong(Mea+1,hatC,drso)
-buildSong(Mea+1+(1./16),hatC,drso)
-buildSong(Mea+1+(2./16),hatZ,drso)
-buildSong(Mea+1+(3./16),hatZ,drso)
-buildSong(Mea+1+(4./16),hatC,drso)
-buildSong(Mea+1+(5./16),hatZ,drso)
-buildSong(Mea+1+(6./16),hatC,drso)
-buildSong(Mea+1+(7./16),hatZ,drso)
-buildSong(Mea+1+(8./16),hatC,drso)
-buildSong(Mea+1+(9./16),hatC,drso)
-buildSong(Mea+1+(10./16),hatZ,drso)
-buildSong(Mea+1+(11./16),hatC,drso)
-buildSong(Mea+1+(12./16),hatZ,drso)
-buildSong(Mea+1+(13./16),hatC,drso)
-buildSong(Mea+1+(14./16),hatZ,drso)
-buildSong(Mea+1+(15./16),hatZ,drso)
-
-buildSong(Mea+2,hatC,drso)
-buildSong(Mea+2+(1./16),hatZ,drso)
-buildSong(Mea+2+(2./16),hatZ,drso)
-buildSong(Mea+2+(3./16),hatZ,drso)
-buildSong(Mea+2+(4./16),hatZ,drso)
-buildSong(Mea+2+(5./16),hatZ,drso)
-buildSong(Mea+2+(6./16),hatZ,drso)
-buildSong(Mea+2+(7./16),hatZ,drso)
-buildSong(Mea+2+(8./16),hatZ,drso)
-buildSong(Mea+2+(9./16),hatC,drso)
-buildSong(Mea+2+(10./16),hatZ,drso)
-buildSong(Mea+2+(11./16),hatZ,drso)
-buildSong(Mea+2+(12./16),hatZ,drso)
-buildSong(Mea+2+(13./16),hatZ,drso)
-buildSong(Mea+2+(14./16),hatZ,drso)
-buildSong(Mea+2+(15./16),hatZ,drso)
-
-buildSong(Mea+3,hatC,drso)
-buildSong(Mea+3+(1./16),hatZ,drso)
-buildSong(Mea+3+(2./16),hatZ,drso)
-buildSong(Mea+3+(3./16),hatZ,drso)
-buildSong(Mea+3+(4./16),hatZ,drso)
-buildSong(Mea+3+(5./16),hatZ,drso)
-buildSong(Mea+3+(6./16),hatZ,drso)
-buildSong(Mea+3+(7./16),hatZ,drso)
-buildSong(Mea+3+(8./16),hatZ,drso)
-buildSong(Mea+3+(9./16),hatC,drso)
-buildSong(Mea+3+(10./16),hatZ,drso)
-buildSong(Mea+3+(11./16),hatZ,drso)
-buildSong(Mea+3+(12./16),hatZ,drso)
-buildSong(Mea+3+(13./16),hatZ,drso)
-buildSong(Mea+3+(14./16),hatZ,drso)
-buildSong(Mea+3+(15./16),hatZ,drso)
-
-buildSong(Mea+4,hatZ,drso)
-buildSong(Mea+4+(1./16),hatZ,drso)
-buildSong(Mea+4+(2./16),hatZ,drso)
-buildSong(Mea+4+(3./16),hatZ,drso)
-buildSong(Mea+4+(4./16),hatZ,drso)
-buildSong(Mea+4+(5./16),hatZ,drso)
-buildSong(Mea+4+(6./16),hatD,drso)
-buildSong(Mea+4+(7./16),hatD,drso)
-buildSong(Mea+4+(8./16),hatD,drso)
-buildSong(Mea+4+(9./16),hatD,drso)
-buildSong(Mea+4+(10./16),hatD,drso)
-buildSong(Mea+4+(11./16),hatD,drso)
-buildSong(Mea+4+(12./16),hatD,drso)
-buildSong(Mea+4+(13./16),hatD,drso)
-buildSong(Mea+4+(14./16),hatD,drso)
-buildSong(Mea+4+(15./16),hatE,drso)
-
-buildSong(Mea+5,hatZ,drso)
-buildSong(Mea+5+(1./16),hatA,drso)
-buildSong(Mea+5+(2./16),hatA,drso)
-buildSong(Mea+5+(3./16),hatA,drso)
-buildSong(Mea+5+(4./16),hatB,drso)
-buildSong(Mea+5+(5./16),hatB,drso)
-buildSong(Mea+5+(6./16),hatEB,drso)
-buildSong(Mea+5+(7./16),hatC,drso)
-buildSong(Mea+5+(8./16),hatC,drso)
-buildSong(Mea+5+(9./16),hatEC,drso)
-buildSong(Mea+5+(10./16),hatZ,drso)
-buildSong(Mea+5+(11./16),hatZ,drso)
-buildSong(Mea+5+(12./16),hatZ,drso)
-buildSong(Mea+5+(13./16),hatZ,drso)
-buildSong(Mea+5+(14./16),hatZ,drso)
-buildSong(Mea+5+(15./16),hatZ,drso)
-
-buildSong(Mea+6,hatZ,drso)
-buildSong(Mea+6+(1./16),hatC,drso)
-buildSong(Mea+6+(2./16),hatC,drso)
-buildSong(Mea+6+(3./16),hatC,drso)
-buildSong(Mea+6+(4./16),hatC,drso)
-buildSong(Mea+6+(5./16),hatC,drso)
-buildSong(Mea+6+(6./16),hatC,drso)
-buildSong(Mea+6+(7./16),hatC,drso)
-buildSong(Mea+6+(8./16),hatC,drso)
-buildSong(Mea+6+(9./16),hatD,drso)
-buildSong(Mea+6+(10./16),hatD,drso)
-buildSong(Mea+6+(11./16),hatD,drso)
-buildSong(Mea+6+(12./16),hatD,drso)
-buildSong(Mea+6+(13./16),hatD,drso)
-buildSong(Mea+6+(14./16),hatD,drso)
-buildSong(Mea+6+(15./16),hatD,drso)
-
-buildSong(Mea+7,hatZ,drso)
-buildSong(Mea+7+(1./16),hatE,drso)
-buildSong(Mea+7+(2./16),hatE,drso)
-buildSong(Mea+7+(3./16),hatE,drso)
-buildSong(Mea+7+(4./16),hatE,drso)
-buildSong(Mea+7+(5./16),hatE,drso)
-buildSong(Mea+7+(6./16),hatE,drso)
-buildSong(Mea+7+(7./16),hatE,drso)
-buildSong(Mea+7+(8./16),hatE,drso)
-buildSong(Mea+7+(9./16),hatE,drso)
-buildSong(Mea+7+(10./16),hatE,drso)
-buildSong(Mea+7+(11./16),hatE,drso)
-buildSong(Mea+7+(12./16),hatE,drso)
-buildSong(Mea+7+(13./16),hatE,drso)
-buildSong(Mea+7+(14./16),hatE,drso)
-buildSong(Mea+7+(15./16),hatE,drso)
-
-buildSong(Mea,ONongameGong,drso)
-buildSong(Mea+1,ONonTTTTTWdink,drso)
-buildSong(Mea+4,ONongameGong,drso)
-buildSong(Mea+5,ONonTTTTTWdink,drso)
-
-Mea=40
-buildSong(Mea,ONongameGong,drso)
-buildSong(Mea,basd,drso)
-buildSong(Mea+1,ONonTTTTTWdink,drso)
-buildSong(Mea+2,snarL,drso)
-buildSong(Mea+4,basd,drso)
-buildSong(Mea+4,ONongameGong,drso)
-buildSong(Mea+5,ONonTTTTTWdink,drso)
-buildSong(Mea+6,snarL,drso)
-
-Mea=48
-buildSong(Mea,ONongameGong,drso)
-buildSong(Mea,basd,drso)
-buildSong(Mea+1,ONonTTTTTWdink,drso)
-buildSong(Mea+2,snarL,drso)
-
-buildSong(Mea+3.625,snarQ,drso)
-buildSong(Mea+3.75,snarQ,drso)
-buildSong(Mea+3.875,snarQ,drso)
-buildSong(Mea+4,snarL,drso)
-buildSong(Mea+4.75,snarL,drso)
-buildSong(Mea+5,ONonTTTTTWdink,drso)
-buildSong(Mea+6,snarL,drso)
-
-Mea=40
-buildSong(Mea,ONongameGong,drso)
-buildSong(Mea,basd,drso)
-buildSong(Mea+1,ONonTTTTTWdink,drso)
-buildSong(Mea+2,snarL,drso)
-buildSong(Mea+4,basd,drso)
-buildSong(Mea+4,ONongameGong,drso)
-buildSong(Mea+5,ONonTTTTTWdink,drso)
-buildSong(Mea+6,snarL,drso)
-
-Mea=48
-buildSong(Mea,ONongameGong,drso)
-buildSong(Mea,basd,drso)
-buildSong(Mea+1,ONonTTTTTWdink,drso)
-buildSong(Mea+2,snarL,drso)
-
-buildSong(Mea+3.625,snarL,drso)
-buildSong(Mea+3.75,snarL,drso)
-buildSong(Mea+3.875,snarL,drso)
-buildSong(Mea+4,snarL,drso)
-buildSong(Mea+4+0.083,basd,drso)
-buildSong(Mea+4+0.167,basd,drso)
-buildSong(Mea+4+0.25,basd,drso)
-buildSong(Mea+4+0.417,basd,drso)
-buildSong(Mea+4+0.5,basd,drso)
-buildSong(Mea+4+0.583,basd,drso)
-buildSong(Mea+4+0.667,basd,drso)
-buildSong(Mea+4.75,snarL,drso)
-buildSong(Mea+4+0.917,basd,drso)
-buildSong(Mea+5,ONonTTTTTWdink,drso)
-buildSong(Mea+5+0.083,basd,drso)
-buildSong(Mea+5+0.333,basd,drso)
-buildSong(Mea+5+0.417,basd,drso)
-buildSong(Mea+5+0.5,basd,drso)
-buildSong(Mea+5+0.667,basd,drso)
-buildSong(Mea+5+0.833,basd,drso)
-buildSong(Mea+6,snarL,drso)
-
-Mea=56
-buildSong(Mea,ONongameGong,drso)
-buildSong(Mea,basd,drso)
-buildSong(Mea+1,ONonTTTTTWdink,drso)
-buildSong(Mea+2,snarL,drso)
-
-buildSong(Mea+3.625,snarL,drso)
-buildSong(Mea+3.75,snarL,drso)
-buildSong(Mea+3.875,snarL,drso)
-buildSong(Mea+4,snarL,drso)
-buildSong(Mea+4+0.083,basd,drso)
-buildSong(Mea+4+0.167,basd,drso)
-buildSong(Mea+4+0.25,basd,drso)
-buildSong(Mea+4+0.417,basd,drso)
-buildSong(Mea+4+0.5,basd,drso)
-buildSong(Mea+4+0.583,basd,drso)
-buildSong(Mea+4+0.667,basd,drso)
-buildSong(Mea+4.75,snarL,drso)
-buildSong(Mea+4+0.917,basd,drso)
-buildSong(Mea+5,ONonTTTTTWdink,drso)
-buildSong(Mea+5+0.083,basd,drso)
-buildSong(Mea+5+0.333,basd,drso)
-buildSong(Mea+5+0.417,basd,drso)
-buildSong(Mea+5+0.5,basd,drso)
-buildSong(Mea+5+0.667,basd,drso)
-buildSong(Mea+5+0.833,basd,drso)
-buildSong(Mea+6,snarL,drso)
-
-
-#hslroom = (1.6,3.0,1.5)
-#hslrooMea = (16,30,15)
-#gotyZeth = zethre(goty,(.1,2.0,1.0),(1.5,1.5,.2))
-#gotyOnth = onthre(goty,(.1,2.0,1.0),(1.5,1.5,.2),hslroom,30,0.5,False,8)
-#gotyOnth = onthre(gotyOnth,(1,20,10),(7.5,7.5,2),hslrooMea,30,0.5,False,8)
-#gotyThth = twthre(goty,(1,20,10),(7.5,7.5,2),hslrooMea,30,0.5,False,8)
-#gotyThth = lopass(gotyThth,-2000)
-
-#gotyOnth = volDrop(gotyOnth,0)
-
-#buildSong(0,gotyZeth,gotyOnth)
-buildFile(drso)
