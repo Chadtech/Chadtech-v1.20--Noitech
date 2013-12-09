@@ -3,9 +3,12 @@ import math
 import random
 import struct
 import wave
-import pygame
+import PIL
+from PIL import Image
 
 #.............................TONES.....................vvv
+
+
 
 #Tonic
 ONon = 100.
@@ -27,9 +30,9 @@ EIFOnith = 118.519
 #5/4
 FIfo = 125.
 #15/8
-FIthei = 187.5
+FITHei = 187.5
 #45/32
-FINIeifo = 140.625
+NIFIeifo = 140.625
 #Group D, ( 1 / Group C ) * 2 
 #8/5
 EIfi = 160
@@ -88,6 +91,26 @@ SEFOfith = 186.667
 #15/14
 FITHsetw = 107.143
 
+panTohns = [ONon,THtw,NIei,FOth,EITWni,EIFOnith,FIfo,FITHei,NIFIeifo,EIfi,EITWfith,EIEInifi,FIth,FITWni,SIfi,NIfi,SEfo,SETHeitw,NISEeifo,EIse,EIFOseth,EIEInise,SEsi,SETWni,SITWse,NIse,SEfi,SETHfifo,FITWse,EIFIseth,SEFOfith,FITHsetw]
+
+botTen = [EIEInise,SETHfifo,EITWfith,FITHsetw] 
+topTen = [FITHei,EIFIseth,NISEeifo,SEFOfith]
+tens = [botTen,topTen] #8 tenTohns
+
+botMov = [FITWni,NIei,EIse,SEsi]
+topMov = [SITWse,SEfo,EITWni,NIfi]
+movs = [botMov,topMov] #8 movTohns
+
+botEmo = [EIFOnith,SIfi,FIfo,NIse] 
+topEmo = [SETWni,EIfi,FIth,NITHeitw]
+emos = [botEmo,topEmo] # 8 emoTohns
+
+botPow = [SETHeitw,FOth,SEfi,NIFIeifo]
+topPow = [EIEInifi,FITWse,THtw,EIFOseth]
+pows = [botPow,topPow] #8 powTohns
+
+
+
 #.............................................................................................
 
 sampleRate = 44100.
@@ -95,12 +118,190 @@ amp = 32767
 oneSec = 1000.
 noteDiv = 12
 barNum = 4
-noteDur = 550 # time length of note in thousandths of a second
+noteDur = 6000 # time length of note in thousandths of a second
 noteCou = 4 #Number of notes per bar
 percent = 0
 speedOfSound = 340.49/sampleRate
 songDur = (barNum*(noteDur/oneSec))*sampleRate
 fileName = ''
+
+# -------------------------- Pixel Reading
+
+def whatTone(topColON,topColTW,botColON,botColTW):
+	cols = [topColON,topColTW,botColON,botColTW]
+	print cols
+	for yit in range(len(cols)):
+		if cols[yit]==(255,255,255):
+			cols[yit]=1
+		if cols[yit]==(255,0,0):
+			cols[yit]=3
+		if cols[yit]==(0,0,255):
+			cols[yit]=5
+		if cols[yit]==(255,128,128):
+			cols[yit]=6
+		if cols[yit]==(0,255,0):
+			cols[yit]=7
+		if cols[yit]==(128,0,0):
+			cols[yit]=9
+	frac = 0
+	frac = (cols[0]*cols[1])/(cols[2]*cols[3])
+	print frac, 'COLS', cols
+	while frac < 1:
+		frac = frac*2
+	frac = frac*25.
+	return frac
+
+def readPix(score):
+	score=Image.open(score)
+	xCou = 0
+	xi,yi = score.size
+	xv,yv = 16,60
+	voiHeight = 200
+	voiNum = yi/voiHeight #200 is the height of my 'jusBars' image (an image of just four bars)
+	print voiNum
+	voiss = []
+	voiBarMarg = 50
+	thisSong=makeSong((xi-voiBarMarg)/144)
+	for nink in range(voiNum):
+		thisHarmProf = []
+		rOct,gOct,bOct = score.getpixel((1,(126+(voiHeight*nink))))
+		whichOct = 2**bOct
+		if score.getpixel((xv,yv+(voiHeight*nink)))==(0,255,0):
+			for rkk in range(5):
+				harmNoom, bigVol, smallVol = score.getpixel(2+(3*rkk),60+(nink*voiHeight))
+				harmDeen, volSlop, doesExist = score.getpixel(2+(3*rkk),63+(nink*voiHeight))
+				if doesExist>0:
+					thisHarmProf.append((float(harmNoom/harmDeen),((bigVol*256)+smallVol),float(800+volSlop)))
+		for vapp in range(5): # The number of 'spaces' in the upper octave of a bar
+			theFreq = 100.
+			yitCou=0
+			for yit in range(xi-voiBarMarg):
+				if yitCou==0:
+					if score.getpixel((yit+voiBarMarg,53+(vapp*10)+(nink*voiHeight)))!=(0,0,0) and score.getpixel((yit+voiBarMarg,53+(vapp*10)+(nink*voiHeight)))!=(64,64,64):
+						print 'happen'
+						print 'YIT', yit, 'VAPP', vapp, 'NINK', nink
+						theFreq=whichOct*2*(whatTone(score.getpixel((yit+voiBarMarg,53+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,53+1+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,53+2+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,53+3+(vapp*10)+(nink*voiHeight)))))
+						while score.getpixel((yit+voiBarMarg+yitCou,53+(vapp*10)+(nink*voiHeight)))!=(0,0,0) and score.getpixel((yit+voiBarMarg+yitCou,53+(vapp*10+(nink*voiHeight))))!=(64,64,64):
+							yitCou+=1
+						if score.getpixel((xv,yv+(nink*voiHeight)))!=(0,0,0):
+							if score.getpixel((xv,yv+(nink*voiHeight)))==(255,0,0):
+								putd = makeTone(theFreq,yitCou/144.)
+							if score.getpixel((xv,yv+(nink*voiHeight)))==(0,255,0):
+								putd = harmize(theFreq,thisHarmProf,yitCou/144.)
+						for qzy in range(10):
+							if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))!=(0,0,0):
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(255,0,0):
+									howMany,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									spaceSize,stilldoesntmatter,thisvariablewontbeused = score.getpixel(2,63+(6*qzy)+(nink*voiHeight))
+									putd = creatMany(putd,howMany,spaceSize)
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(0,255,0):
+									howDivs,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									putd = bitReduc(putd,howDivs)
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(0,0,255):
+									howCutOff,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									putd = cutOff(putd,howCutOff)
+						print yit/144., len(putd)/144., len(thisSong)/144., theFreq, yitCou
+						buildSong(yit/144.,putd,thisSong,250.)
+				else:
+					yitCou-=1
+		for vapp in range(5): # The number of 'lines' in the upper octave of a bar
+			theFreq = 100.
+			yitCou=0
+			for yit in range(xi-voiBarMarg):
+				if yitCou==0:
+					if score.getpixel((yit+voiBarMarg,57+(vapp*10)+(nink*voiHeight)))!=(0,0,0) and score.getpixel((yit+voiBarMarg,57+(vapp*10)+(nink*voiHeight)))!=(64,64,64):
+						print 'happen'
+						print 'YIT', yit, 'VAPP', vapp, 'NINK', nink
+						theFreq=whichOct*2*(whatTone(score.getpixel((yit+voiBarMarg,57+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,57+1+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,57+4+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,57+5+(vapp*10)+(nink*voiHeight)))))
+						while score.getpixel((yit+voiBarMarg+yitCou,57+(vapp*10)+(nink*voiHeight)))!=(0,0,0) and score.getpixel((yit+voiBarMarg+yitCou,57+(vapp*10)+(nink*voiHeight)))!=(64,64,64):
+							yitCou+=1
+						if score.getpixel((xv,yv+(nink*voiHeight)))!=(0,0,0):
+							if score.getpixel((xv,yv+(nink*voiHeight)))==(255,0,0):
+								putd = makeTone(theFreq,yitCou/144.)
+							if score.getpixel((xv,yv+(nink*voiHeight)))==(0,255,0):
+								putd = harmize(theFreq,thisHarmProf,yitCou/144.)
+						for qzy in range(10):
+							if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))!=(0,0,0):
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(255,0,0):
+									howMany,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									spaceSize,stilldoesntmatter,thisvariablewontbeused = score.getpixel(2,63+(6*qzy)+(nink*voiHeight))
+									putd = creatMany(putd,howMany,spaceSize)
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(0,255,0):
+									howDivs,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									putd = bitReduc(putd,howDivs)
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(0,0,255):
+									howCutOff,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									putd = cutOff(putd,howCutOff)
+						print yit/144., len(putd)/144., len(thisSong)/144., theFreq, yitCou
+						buildSong(yit/144.,putd,thisSong,250.)
+				else:
+					yitCou-=1
+		for vapp in range(5): # The number of 'spaces' in the lower octave of a bar
+			theFreq = 100.
+			yitCou=0
+			for yit in range(xi-voiBarMarg):
+				if yitCou==0:
+					if score.getpixel((yit+voiBarMarg,103+(vapp*10)+(nink*voiHeight)))!=(0,0,0) and score.getpixel((yit+voiBarMarg,103+(vapp*10)+(nink*voiHeight)))!=(64,64,64):
+						print 'happen'
+						print 'YIT', yit, 'VAPP', vapp, 'NINK', nink
+						theFreq=whichOct*(whatTone(score.getpixel((yit+voiBarMarg,103+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,103+1+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,103+2+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,103+3+(vapp*10)+(nink*voiHeight)))))
+						while score.getpixel((yit+voiBarMarg+yitCou,103+(vapp*10)+(nink*voiHeight)))!=(0,0,0) and score.getpixel((yit+voiBarMarg+yitCou,103+(vapp*10)+(nink*voiHeight)))!=(64,64,64):
+							yitCou+=1
+						if score.getpixel((xv,yv+(nink*voiHeight)))!=(0,0,0):
+							if score.getpixel((xv,yv+(nink*voiHeight)))==(255,0,0):
+								putd = makeTone(theFreq,yitCou/144.)
+							if score.getpixel((xv,yv+(nink*voiHeight)))==(0,255,0):
+								putd = harmize(theFreq,thisHarmProf,yitCou/144.)
+						for qzy in range(10):
+							if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))!=(0,0,0):
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(255,0,0):
+									howMany,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									spaceSize,stilldoesntmatter,thisvariablewontbeused = score.getpixel(2,63+(6*qzy)+(nink*voiHeight))
+									putd = creatMany(putd,howMany,spaceSize)
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(0,255,0):
+									howDivs,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									putd = bitReduc(putd,howDivs)
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(0,0,255):
+									howCutOff,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									putd = cutOff(putd,howCutOff)
+						print yit/144., len(putd)/144., len(thisSong)/144., theFreq, yitCou
+						buildSong(yit/144.,putd,thisSong,250.)
+				else:
+					yitCou-=1
+		for vapp in range(5): # The number of 'line' in the lower octave of a bar
+			theFreq = 100.
+			yitCou=0
+			for yit in range(xi-voiBarMarg):
+				if yitCou==0:
+					if score.getpixel((yit+voiBarMarg,107+(vapp*10)+(nink*voiHeight)))!=(0,0,0) and score.getpixel((yit+voiBarMarg,107+(vapp*10)+(nink*voiHeight)))!=(64,64,64):
+						print 'happen'
+						print 'YIT', yit, 'VAPP', vapp, 'NINK', nink
+						theFreq=whichOct*(whatTone(score.getpixel((yit+voiBarMarg,107+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,107+1+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,107+4+(vapp*10)+(nink*voiHeight))),score.getpixel((yit+voiBarMarg,107+5+(vapp*10)+(nink*voiHeight)))))
+						while score.getpixel((yit+voiBarMarg+yitCou,107+(vapp*10)+(nink*voiHeight)))!=(0,0,0) and score.getpixel((yit+voiBarMarg+yitCou,107+(vapp*10)+(nink*voiHeight)))!=(64,64,64):
+							yitCou+=1
+						if score.getpixel((xv,yv+(nink*voiHeight)))!=(0,0,0):
+							if score.getpixel((xv,yv+(nink*voiHeight)))==(255,0,0):
+								putd = makeTone(theFreq,yitCou/144.)
+							if score.getpixel((xv,yv+(nink*voiHeight)))==(0,255,0):
+								putd = harmize(theFreq,thisHarmProf,yitCou/144.)
+						for qzy in range(10):
+							if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))!=(0,0,0):
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(255,0,0):
+									howMany,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									spaceSize,stilldoesntmatter,thisvariablewontbeused = score.getpixel(2,63+(6*qzy)+(nink*voiHeight))
+									putd = creatMany(putd,howMany,spaceSize)
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(0,255,0):
+									howDivs,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									putd = bitReduc(putd,howDivs)
+								if score.getpixel((xv,yv+6+(6*qzy)+(nink*voiHeight)))==(0,0,255):
+									howCutOff,whocares,thisvariabledoesntmatter = score.getpixel(2,60+(6*qzy)+(nink*voiHeight))
+									putd = cutOff(putd,howCutOff)
+						print yit/144., len(putd)/144., len(thisSong)/144., theFreq, yitCou
+						buildSong(yit/144.,putd,thisSong,250.)
+				else:
+					yitCou-=1
+	buildFile(thisSong)
+
 
 #------------------------------Tone making
 
@@ -155,10 +356,10 @@ def makeSong(dur): # Makes an empty array with the length given (dur) in notes o
 def givDur(barNum,dur): #Returns the duration in samples, given the number of bars, number of notes per bar, and time duration of each note
 	return (noteDur/oneSec*sampleRate)*dur
 
-def buildSong(whereAt,durRay,songRay): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
+def buildSong(whereAt,durRay,songRay,level): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
 	whereAtIn = whereAt*(noteDur/oneSec)*sampleRate
 	for vapp in range(len(durRay)):
-		songRay[vapp+int(whereAtIn)] += durRay[vapp]
+		songRay[vapp+int(whereAtIn)] += durRay[vapp] *(level/1000.)
 
 def openFile(fileName): # If you have a .wav file you want to manipulate it, you can load it into an array with this function
 	outRay = []
@@ -202,16 +403,31 @@ def buildFile(song): #Turns input 'song' into .wav file.
 #--------------------------------Effects
 
 def creatMany(durRay,many,space):
-	outRay = durRay
+	outRay = []
 	orig = []
 	for yit in range(len(outRay)):
-		orig.append(outRay[yit])
+		orig.append(durRay[yit])
+		outRay.append(durRay[yit])
 	for yit in range(many*space):
 		outRay.append(0.)
 		print 'THIS HAPPENED', len(outRay), len(orig)
 	for vapp in range(many):
 		for dukh in range(len(orig)):
 			outRay[dukh+(vapp*space)]+=orig[dukh]
+	return outRay
+
+def triReduc(durRay,divs):
+	outRay=[]
+	for yit in range(len(durray)):
+		outRay.append(durRay[yit])
+	incre = 0
+	for yit in range(divs-(len(outRay)%divs)):
+		outRay.append(0.)
+	for vapp in range(len(outray)/divs):
+		for gno in range(divs):
+			incre = (outRay[vapp]-outRay[vapp+divs])/divs
+			for dukh in range(divs-2):
+				outRay[vapp+1] = outRay[vapp+1]+(incre*yit)
 	return outRay
 
 def bitReduc(durRay,divs):
@@ -242,7 +458,10 @@ def volProf(durRay,volProf):
 	for vapp in range(len(volProf)):
 		startVol, endVol, dur, whereAt = volProf[vapp]
 		whereAt = int(whereAt*(noteDur/oneSec)*sampleRate)
-		dur = int(dur*(noteDur/oneSec)*sampleRate)
+		if dur==0:
+			dur = len(durRay)-whereAt
+		else:
+			dur = int(dur*(noteDur/oneSec)*sampleRate)
 		startVol = startVol/1000.
 		endVol = endVol/1000.
 		for yit in range(dur):
@@ -251,6 +470,25 @@ def volProf(durRay,volProf):
 		for yit in range(len(inRay)-(whereAt+dur)):
 			inRay[yit+dur]=inRay[yit+dur]*endVol
 	return inRay
+
+#def volProf(durRay,volProf):
+#	inRay=durRay
+#	for vapp in range(len(volProf)):
+#		startVol, endVol, dur, whereAt = volProf[vapp]
+#		whereAt = int(whereAt*(noteDur/oneSec)*sampleRate)
+#		if dur==0:
+#			dur = len(durRay)-whereAt
+#		else:
+#			dur = int(dur*(noteDur/oneSec)*sampleRate)
+#		startVol = startVol/1000.
+#		endVol = endVol/1000.
+#		for yit in range(dur):
+#			#print dur, whereAt, yit, whereAt+yit, len(inRay)
+#			inRay[whereAt+yit]=inRay[whereAt+yit]*(startVol+((endVol-startVol)/dur)*yit)
+#		for yit in range(len(inRay)-(whereAt+dur)):
+#			inRay[yit+dur]=inRay[yit+dur]*endVol
+#	return inRay
+
 
 
 def volSlop(durRay,volSlop): # Add a volume slope to an array. The higher the volume slope, the slower the the array reaches volume zero, or even increases in volume.

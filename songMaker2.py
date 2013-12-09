@@ -19,22 +19,20 @@ THtwT=volProf(THtwT,[(10.,1000.,1,0),(1000.,0.,0.2,3.8)])
 THtwTL=makeTone(THtw*4,8)
 THtwTL=volProf(THtwTL,[(10.,1000.,4,0),(1000.,0.,0.2,7.8)])
 THtwTL=creatMany(THtwTL,10,10)
+THtwTL=cutOff(THtwTL,332)
 THtwTL=volDrop(THtwTL,33.)
-
-THtwTL=cutOff(THtwTL,773)
 
 FIfoT=makeTone(FIfo*8,4)
 FIfoT=volProf(FIfoT,[(10.,1000.,1,0),(1000.,0.,0.2,3.8)])
 FIfoT=creatMany(FIfoT,10,10)
-FIfoT=volDrop(FIfoT,33.)
-
 FIfoT=cutOff(FIfoT,773)
+FIfoT=volDrop(FIfoT,33.)
 
 ONonT=makeTone(ONon*2,8)
 ONonT=cutOff(ONonT,773)
 ONonT=volProf(ONonT,[(10.,1000.,4,0),(1000.,0.,0.2,7.8)])
 ONonT=creatMany(ONonT,10,100)
-ONonT=volDrop(ONonT,33.)
+ONonT=volDrop(ONonT,400.)
 
 FIfoT=cutOff(FIfoT,773)
 
