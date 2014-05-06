@@ -317,6 +317,49 @@ def makeTone(tone,dur): #Returns an array of a given tone, for a certain duratio
 		values[vapp] = value
 	return values
 
+def MakeToneModulus(tone,dur): #Returns an array of a given tone, over a certain time, at a certain decay rate. Decay rate of 1000 does not decay. 999 decays very quickly.
+	values = []
+	onePeriod = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+		onePeriod.append(0.)
+	for vapp in range(int(sampleRate/float(tone))):
+		value = math.sin((vapp*2*math.pi*inTone))*amp
+		onePeriod[vapp] = value
+	for gno in range(inDur):
+		values[gno]=onePeriod[gno%len(onePeriod)]
+	return values
+
+def makeSaw(tone,dur): #Make a saw tooth wave
+	values = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+	for vapp in range(inDur):
+		#print (vapp%inTone)*(2*amp), vapp, inTone, vapp%inTone
+		value = (amp - (((vapp*tone)%(sampleRate))/sampleRate)*amp) - (amp/2)
+		#value = (-(2*amp)/math.pi)*math.atan(1/math.tan((vapp*math.pi)/inTone))
+		values[vapp]=value
+	return values
+
+def makeTriangle(tone,dur): #Make a Triangle wave
+	values = []
+	inTone = float(tone/2)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+	for vapp in range(inDur):
+		value = (amp - ((((vapp*(tone/2))%(sampleRate))/sampleRate)*amp) - (amp/2))
+		values[vapp]=value
+	for gno in range(len(values)):
+		values[gno]=math.fabs(values[gno])
+	for brs in range(len(values)):
+		values[brs] = (values[brs]*2) - (amp/2)
+	return values
+
 def harmize(tone,harmRay,dur): #Returns an array of a given tone, with a certain set of harmonics. The harmonics come in an array where each element is (harmonic, relativel Volume, volSlop)
 	outRay=[]
 	tempoRay=[]
