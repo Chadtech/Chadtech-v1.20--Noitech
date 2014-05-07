@@ -360,6 +360,28 @@ def makeTriangle(tone,dur): #Make a Triangle wave
 		values[brs] = (values[brs]*2) - (amp/2)
 	return values
 
+def makeTriangleTrig(tone,dur,harmNum): #Make a Triangle Wave with trigonometry
+	values = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+	for harmonic in range(harmNum):
+		for vapp in range(len(values)):
+			values[vapp]+= amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
+	return values
+
+def makeTriangleEnHarmonic(tone,dur,harmNum): #Make a Triangle Wave with enharmonics
+	values = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+	for harmonic in range(harmNum):
+		for vapp in range(len(values)):
+			values[vapp]+= amp*((-1)**(harmonic))*(math.sin((1+harmonic*(0.0013))*vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
+	return values
+
 def harmize(tone,harmRay,dur): #Returns an array of a given tone, with a certain set of harmonics. The harmonics come in an array where each element is (harmonic, relativel Volume, volSlop)
 	outRay=[]
 	tempoRay=[]
