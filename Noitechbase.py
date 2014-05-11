@@ -339,10 +339,44 @@ def makeSaw(tone,dur): #Make a saw tooth wave
 	for yit in range(inDur):
 		values.append(0.)
 	for vapp in range(inDur):
-		#print (vapp%inTone)*(2*amp), vapp, inTone, vapp%inTone
 		value = (amp - (((vapp*tone)%(sampleRate))/sampleRate)*amp) - (amp/2)
-		#value = (-(2*amp)/math.pi)*math.atan(1/math.tan((vapp*math.pi)/inTone))
 		values[vapp]=value
+	return values
+
+def makeSawTrig(tone,dur,harmNum): #Make a saw tooth wave
+	values = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+	for harmonic in range(1,harmNum):
+		for vapp in range(len(values)):
+			values[vapp]+= amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
+	return values
+
+def makeSawTrigEnharmonic(tone,dur,harmNum,enharmonicity=0.0007): #Make a saw tooth wave
+	values = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+	for harmonic in range(1,harmNum):
+		for vapp in range(len(values)):
+			values[vapp]+= amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic*enharmonicity)/harmonic)
+	return values
+
+def makeSawTrigMitDecayCompressed(tone,dur,harmNum,decayRate=8481.): #Make a saw tooth wave
+	values = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+	for harmonic in range(1,harmNum):
+		for vapp in range(len(values)):
+			if harmonic>1:
+				values[vapp]+= (decayRate/((decayRate/20.)+(vapp*(harmNum))))*amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
+			else:
+				values[vapp]+= ((1-(decayRate/(decayRate+(harmNum*3*vapp))))*amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
 	return values
 
 def makeTriangle(tone,dur): #Make a Triangle wave
@@ -360,6 +394,17 @@ def makeTriangle(tone,dur): #Make a Triangle wave
 		values[brs] = (values[brs]*2) - (amp/2)
 	return values
 
+def makeSquareTrig(tone,dur,harmNum):
+	values = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+	for harmonic in range(1,harmNum):
+		for vapp in range(len(values)):
+			values[vapp]+= amp*(math.sin(vapp*2*math.pi*inTone*((harmonic*2)-1))/(((harmonic*2)-1)))
+	return values
+
 def makeTriangleTrig(tone,dur,harmNum): #Make a Triangle Wave with trigonometry
 	values = []
 	inTone = float(tone)/sampleRate
@@ -371,7 +416,7 @@ def makeTriangleTrig(tone,dur,harmNum): #Make a Triangle Wave with trigonometry
 			values[vapp]+= amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
 	return values
 
-def makeTriangleEnHarmonic(tone,dur,harmNum): #Make a Triangle Wave with enharmonics
+def makeTriangleEnharmonic(tone,dur,harmNum): #Make a Triangle Wave with enharmonics
 	values = []
 	inTone = float(tone)/sampleRate
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
@@ -380,6 +425,31 @@ def makeTriangleEnHarmonic(tone,dur,harmNum): #Make a Triangle Wave with enharmo
 	for harmonic in range(harmNum):
 		for vapp in range(len(values)):
 			values[vapp]+= amp*((-1)**(harmonic))*(math.sin((1+harmonic*(0.0013))*vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
+	return values
+
+def makeTriangleEnharmonicMitDecay(tone,dur,harmNum): #Make a Triangle Wave with enharmonics
+	values = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+	for harmonic in range(harmNum):
+		for vapp in range(len(values)):
+			values[vapp]+= (4410/(4410+(vapp*harmNum)))*amp*((-1)**(harmonic))*(math.sin((1+harmonic*(0.0013))*vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
+	return values
+
+def makeTriangleEnharmonicMitDecayCompressed(tone,dur,harmNum): #Make a Triangle Wave with enharmonics
+	values = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+	for harmonic in range(harmNum):
+		for vapp in range(len(values)):
+			if harmonic>0:
+				values[vapp]+= ((8481./(481.+(vapp*(harmNum))))*2*amp*((-1)**(harmonic))*(math.sin((1+(harmonic*(0.00007)))*vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2)))
+			else:
+				values[vapp]+= ((1-(8481./(8481.+(harmNum*3*vapp))))*amp*((-1)**(harmonic))*(math.sin((1+(harmonic*(0.00007)))*vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2)))
 	return values
 
 def harmize(tone,harmRay,dur): #Returns an array of a given tone, with a certain set of harmonics. The harmonics come in an array where each element is (harmonic, relativel Volume, volSlop)
