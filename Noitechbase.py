@@ -6,111 +6,6 @@ import wave
 import PIL
 from PIL import Image
 
-#.............................TONES.....................vvv
-
-
-
-#Tonic
-ONon = 100.
-# Group A, Tonic * 3/2 ^ n -------------------------------------------------------------------------
-#3/2
-THtw = 150.
-#9/8
-NIei = 112.5
-#27/16
-NITHeitw = 168.75
-#Group B, ( 1 / Group A  ) * 2
-#4/3
-FOth = 133.333
-#16/9
-EITWni = 177.778
-#32/27
-EIFOnith = 118.519
-#Group C, 5/4 * 3/2 ^ n ------------------------------------------------------------------------------
-#5/4
-FIfo = 125.
-#15/8
-FITHei = 187.5
-#45/32
-NIFIeifo = 140.625
-#Group D, ( 1 / Group C ) * 2 
-#8/5
-EIfi = 160
-#16/15
-EITWfith = 106.667
-#64/45
-EIEInifi = 142.222
-#Group E, 5/4 * 4/3 ^ n
-#5/3
-FIth = 166.667
-#10/9
-FITWni = 111.111
-#Group F, (1 / Group E) * 2
-#6/5
-SIfi = 120.
-#9/5
-NIfi = 180.
-#Group G, 7/4 * 3/2 ^ n -----------------------------------------------------------------------------------------
-#7/4
-SEfo = 175.
-#21/16
-SETHeitw = 131.25
-#63/32
-NISEeifo = 196.875
-#Group H, ( 1 / Group G ) * 2
-#8/7
-EIse = 114.286
-#32/21
-EIFOseth = 152.381
-#64/63
-EIEInise = 101.587
-#Group I, 7/4 * 4/3 ^ n
-#7/6
-SEsi = 116.667
-#14/9
-SETWni = 155.556
-#Group J, ( 1 / Group J ) * 2
-#12/7
-SITWse = 171.429
-#9/7
-NIse = 128.571
-#Group K, 7/5 * 3/2 ^ n --------------------------------------------------------------------------------------------
-#7/5
-SEfi = 140.
-#21/20
-SETHfifo = 105.
-#Group L, ( 1 / Group K ) * 2
-#10/7
-FITWse = 142.857
-#40/21
-EIFIseth = 190.476
-#Group M, 7/5 * 4/3 ^ n
-#28/15
-SEFOfith = 186.667
-#Group N, ( 1 / Group M ) * 2
-#15/14
-FITHsetw = 107.143
-
-panTohns = [ONon,THtw,NIei,FOth,EITWni,EIFOnith,FIfo,FITHei,NIFIeifo,EIfi,EITWfith,EIEInifi,FIth,FITWni,SIfi,NIfi,SEfo,SETHeitw,NISEeifo,EIse,EIFOseth,EIEInise,SEsi,SETWni,SITWse,NIse,SEfi,SETHfifo,FITWse,EIFIseth,SEFOfith,FITHsetw]
-
-botTen = [EIEInise,SETHfifo,EITWfith,FITHsetw] 
-topTen = [FITHei,EIFIseth,NISEeifo,SEFOfith]
-tens = [botTen,topTen] #8 tenTohns
-
-botMov = [FITWni,NIei,EIse,SEsi]
-topMov = [SITWse,SEfo,EITWni,NIfi]
-movs = [botMov,topMov] #8 movTohns
-
-botEmo = [EIFOnith,SIfi,FIfo,NIse] 
-topEmo = [SETWni,EIfi,FIth,NITHeitw]
-emos = [botEmo,topEmo] # 8 emoTohns
-
-botPow = [SETHeitw,FOth,SEfi,NIFIeifo]
-topPow = [EIEInifi,FITWse,THtw,EIFOseth]
-pows = [botPow,topPow] #8 powTohns
-
-
-
 #.............................................................................................
 
 sampleRate = 44100.
@@ -537,6 +432,7 @@ def buildFile(song): #Turns input 'song' into .wav file.
 
 #--------------------------------Effects
 
+###### Copy the sound file, and add it back to itself MANY times, spaced apart in SPACE intervals
 def creatMany(durRay,many,space):
 	outRay = []
 	orig = []
@@ -545,12 +441,12 @@ def creatMany(durRay,many,space):
 		outRay.append(durRay[yit])
 	for yit in range(many*space):
 		outRay.append(0.)
-		print 'THIS HAPPENED', len(outRay), len(orig)
 	for vapp in range(many):
 		for dukh in range(len(orig)):
 			outRay[dukh+(vapp*space)]+=orig[dukh]
 	return outRay
 
+###### No clue what this one does
 def triReduc(durRay,divs):
 	outRay=[]
 	for yit in range(len(durray)):
@@ -565,6 +461,7 @@ def triReduc(durRay,divs):
 				outRay[vapp+1] = outRay[vapp+1]+(incre*yit)
 	return outRay
 
+##### Reduce the "resolution" of the file. Kind of like reducing the frame rate
 def bitReduc(durRay,divs):
 	outRay = durRay
 	ave = 0
@@ -578,6 +475,7 @@ def bitReduc(durRay,divs):
 			outRay[(vapp*divs)+gno]=ave
 	return outRay
 
+##### If Cap the volume off at a the value volCut. This will create clipping
 def cutOff(durRay,volCut):
 	outRay = durRay
 	volCut = (volCut/1000.)*amp
@@ -588,6 +486,8 @@ def cutOff(durRay,volCut):
 			outRay[yit]=(-1*volCut)
 	return outRay
 
+#### this is a very complicated version of volSlop (below).
+#### The input 'volProf' is an array, whos elements are quadtuples. Where the elements in their order is (the starting volume, the ending volume, the duration of the change in volume, where the reduction starts)
 def volProf(durRay,volProf):
 	inRay=durRay
 	for vapp in range(len(volProf)):
@@ -606,25 +506,9 @@ def volProf(durRay,volProf):
 			inRay[yit+dur]=inRay[yit+dur]*endVol
 	return inRay
 
-#def volProf(durRay,volProf):
-#	inRay=durRay
-#	for vapp in range(len(volProf)):
-#		startVol, endVol, dur, whereAt = volProf[vapp]
-#		whereAt = int(whereAt*(noteDur/oneSec)*sampleRate)
-#		if dur==0:
-#			dur = len(durRay)-whereAt
-#		else:
-#			dur = int(dur*(noteDur/oneSec)*sampleRate)
-#		startVol = startVol/1000.
-#		endVol = endVol/1000.
-#		for yit in range(dur):
-#			#print dur, whereAt, yit, whereAt+yit, len(inRay)
-#			inRay[whereAt+yit]=inRay[whereAt+yit]*(startVol+((endVol-startVol)/dur)*yit)
-#		for yit in range(len(inRay)-(whereAt+dur)):
-#			inRay[yit+dur]=inRay[yit+dur]*endVol
-#	return inRay
-
-def volSlop(durRay,volSlop): # Add a volume slope to an array. The higher the volume slope, the slower the the array reaches volume zero, or even increases in volume.
+##### volSlop reduces the volume of the sound over time
+##### the input 'volSlop' is a number. The lower the number the faster the volume reduces (1000. is no drop, higher than 1000. is a volume increase)
+def volSlop(durRay,volSlop):
 	inRay = durRay
 	volSlop = (volSlop/1000. + 999.)/1000.
 	for vapp in range(len(durRay)):
@@ -873,6 +757,8 @@ def twthre(durRay,source,ear,room,loss,howMuchNoise,aftaNoise,allpass): #How dur
 			print percent, '%', 'TWTHRE'
 	return outRay
 
+
+##### This one doesnt work
 def lopass(durRay,cutov):
 	outRay = durRay
 	for vapp in range(len(durRay)-1):
