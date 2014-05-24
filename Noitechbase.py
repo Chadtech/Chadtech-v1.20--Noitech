@@ -624,8 +624,6 @@ def volProf(durRay,volProf):
 #			inRay[yit+dur]=inRay[yit+dur]*endVol
 #	return inRay
 
-
-
 def volSlop(durRay,volSlop): # Add a volume slope to an array. The higher the volume slope, the slower the the array reaches volume zero, or even increases in volume.
 	inRay = durRay
 	volSlop = (volSlop/1000. + 999.)/1000.
