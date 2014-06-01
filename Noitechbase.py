@@ -366,7 +366,24 @@ def zethre(durRay,source,ear): # Add the '0th reflection', ie, simulate how it w
 		outRay.append(0.)
 	for gno in range(len(outRay)-int(lag)):
 		outRay[gno+int(lag)]=(4*inRay[gno])/(1+dist)
-	print 'ZETHRE COMPLETE'
+	return outRay
+
+def halfSpeed(durRay):
+	outRay =[]
+	for moment in range(len(durRay)):
+		outRay.append(0.)
+		outRay.append(0.)
+	for moment in range(len(durRay)):
+		outRay[moment*2]=durRay[moment]
+		outRay[(moment*2)+1]=(durRay[moment]+durRay[moment+1])/2
+	return outRay
+
+def doubleSpeed(durRay):
+	outRay=[]
+	for moment in range((len(durRay)/2)+1):
+		outRay.append(0.)
+	for moment in range(len(outRay)):
+		outRay[moment]=(durRay[moment*2]+durRay[(moment*2)+1])/2
 	return outRay
 
 ##### This one doesnt work
