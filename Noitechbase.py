@@ -13,7 +13,7 @@ amp = 32767
 oneSec = 1000.
 noteDiv = 12
 barNum = 4
-noteDur = 6000 # time length of note in thousandths of a second
+noteDur = 350 # time length of note in thousandths of a second
 noteCou = 4 #Number of notes per bar
 percent = 0
 speedOfSound = 340.49/sampleRate
@@ -92,7 +92,7 @@ def makeSawTrigMitDecayCompressed(tone,dur,harmNum,decayRate=8481.): #Make a saw
 			if harmonic>1:
 				values[vapp]+= (decayRate/((decayRate/20.)+(vapp*(harmNum))))*amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
 			else:
-				values[vapp]+= ((1-(decayRate/(decayRate+(harmNum*3*vapp))))*amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
+				values[vapp]+= (1-(decayRate/(decayRate+(harmNum*3*vapp))))*amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
 	return values
 
 def makeTriangle(tone,dur): #Make a Triangle wave
@@ -201,7 +201,7 @@ def makeSong(dur): # Makes an empty array with the length given (dur) in notes o
 	outRay = []
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
 	for vapp in range(inDur):
-		outRay.append(0)
+		outRay.append(0.)
 	return outRay
 
 def givDur(barNum,dur): #Returns the duration in samples, given the number of bars, number of notes per bar, and time duration of each note
@@ -222,7 +222,7 @@ def openFile(fileName): # If you have a .wav file you want to manipulate it, you
 		outRay.append(yit)
 	return outRay
 
-def buildFile(song,filename): #Turns input 'song' into .wav file.
+def buildFile(song,fileName): #Turns input 'song' into .wav file.
 	noise_output = wave.open(fileName, 'w')
 	noise_output.setparams((1, 2, sampleRate, 0, 'NONE', 'not compressed'))	
 	percent = 0
@@ -232,7 +232,7 @@ def buildFile(song,filename): #Turns input 'song' into .wav file.
 			noise_output.writeframes(packed_value)
 			if yit%(int(len(song))/100)==0:
 				percent += 1
-				print percent, '%', song[yit]
+				print percent, '%', song[yit], fileName
 		else:
 			if song[yit] >= 32767:
 				packed_value = struct.pack('h', 32767)
@@ -328,7 +328,6 @@ def volProf(durRay,volProf):
 		startVol = startVol/1000.
 		endVol = endVol/1000.
 		for yit in range(dur):
-			#print dur, whereAt, yit, whereAt+yit, len(inRay)
 			inRay[whereAt+yit]=inRay[whereAt+yit]*(startVol+((endVol-startVol)/dur)*yit)
 		for yit in range(len(inRay)-(whereAt+dur)):
 			inRay[yit+dur]=inRay[yit+dur]*endVol
