@@ -373,17 +373,47 @@ def halfSpeed(durRay):
 		outRay.append(0.)
 		outRay.append(0.)
 	for moment in range(len(durRay)):
-		outRay[moment*2]=durRay[moment]
-		outRay[(moment*2)+1]=(durRay[moment]+durRay[moment+1])/2
+		outRay[(moment*2)]=durRay[moment]
+	for moment in range((len(outRay)/2)-1):
+		outRay[(moment*2)+1]=outRay[moment*2]-((outRay[(moment*2)]-outRay[(moment*2)+2])/2.)
 	return outRay
 
 def doubleSpeed(durRay):
 	outRay=[]
-	for moment in range((len(durRay)/2)+1):
+	for moment in range((len(durRay)/2)):
 		outRay.append(0.)
 	for moment in range(len(outRay)):
 		outRay[moment]=(durRay[moment*2]+durRay[(moment*2)+1])/2
 	return outRay
+
+def multiplySpeed(durRay,multiples):
+	outRay=[]
+	for moment in range(len(durRay)/multiples):
+		outRay.append(0.)
+	for moment in range(len(outRay)):
+		value = 0
+		for time in range(multiples):
+			value+=durRay[(moment*multiples)+time]
+		value = value/multiples
+		outRay[moment]=value
+	return outRay
+
+def divideSpeed(durRay,divisions):
+	outRay=[]
+	for moment in range(len(durRay)):
+		for times in range(divisions):
+			outRay.append(0.)
+	for moment in range(len(durRay)):
+		outRay[moment*divisions]=durRay[moment]
+	for moment in range((len(outRay)/divisions)-1):
+		difference=outRay[moment*divisions]-outRay[(moment*divisions)+divisions]
+		difference=difference/divisions
+		for gap in range((divisions)-1):
+			outRay[moment+(gap+1)]=outRay[moment*divisions]-(difference*(gap+1))
+	return outRay
+
+
+
 
 ##### This one doesnt work
 def lopass(durRay,cutov):
