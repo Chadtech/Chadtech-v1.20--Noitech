@@ -8,12 +8,12 @@ from PIL import Image
 
 #.............................................................................................
 
-sampleRate = 44100.
+sampleRate = 441000.
 amp = 32767
 oneSec = 1000.
 noteDiv = 12
 barNum = 4
-noteDur = 350 # time length of note in thousandths of a second
+noteDur = 150 # time length of note in thousandths of a second
 noteCou = 4 #Number of notes per bar
 percent = 0
 speedOfSound = 340.49/sampleRate
@@ -195,9 +195,37 @@ def harmize(tone,harmRay,dur): #Returns an array of a given tone, with a certain
 	for vapp in range(len(durRay)):
 		inRay[vapp] = inRay[vapp]*(volSlop**vapp)
 
+def grainMake(grain,tone,dur):
+	grain = openFile(grain)
+	outRay=[]
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+
+	inGrain = []
+	for sample in range(len(grain)):
+		for multiply in range(1000):
+			inGrain.append(grain[sample])
+
+	for moment in range(inDur*1000):
+		outRay.append(0.)
+
+	for instance in range(int(inDur/(len(inGrain)*tone))):
+		for moment in range(len(inGrain)):
+			outRay[instance*int((len(inGrain)*tone))+moment]=inGrain[moment]
+
+	compressRay=[]
+	for period in range(len(outRay)/1000):
+		value = 0
+		for sample in range(1000):
+			value+=outRay[(period*1000)+sample]
+		value=value/1000
+		compressRay.append(value)
+	outRay=compressRay
+	return outRay
+
+
 #--------------------------------Building
 
-def makeSong(dur): # Makes an empty array with the length given (dur) in notes of time length noteDur and sample length of noteDur/1000 * sampleRate
+def makeDur(dur): # Makes an empty array with the length given (dur) in notes of time length noteDur and sample length of noteDur/1000 * sampleRate
 	outRay = []
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
 	for vapp in range(inDur):
@@ -223,6 +251,8 @@ def openFile(fileName): # If you have a .wav file you want to manipulate it, you
 	return outRay
 
 def buildFile(song,fileName): #Turns input 'song' into .wav file.
+	if not fileName.endswith('.wav'):
+		fileName=fileName+'.wav'
 	noise_output = wave.open(fileName, 'w')
 	noise_output.setparams((1, 2, sampleRate, 0, 'NONE', 'not compressed'))	
 	percent = 0
