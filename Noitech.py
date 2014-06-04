@@ -417,9 +417,10 @@ def halfSpeed(durRay):
 		outRay.append(0.)
 	for moment in range(len(durRay)):
 		outRay[(moment*2)]=durRay[moment]
-	for moment in range((len(outRay)/2)-1):
-		outRay[(moment*2)+1]=outRay[moment*2]-((outRay[(moment*2)]-outRay[(moment*2)+2])/2.)
-	print len(outRay)
+	for moment in range(len(durRay)-1):
+		value = durRay[moment]+durRay[moment+1]
+		value /= 2.
+		outRay[(moment*2)+1]=value
 	return outRay
 
 def doubleSpeed(durRay):
