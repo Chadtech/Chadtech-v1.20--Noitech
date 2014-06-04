@@ -8,7 +8,7 @@ from PIL import Image
 
 #.............................................................................................
 
-sampleRate = 441000.
+sampleRate = 44100.
 amp = 32767
 oneSec = 1000.
 noteDiv = 12
@@ -199,27 +199,11 @@ def grainMake(grain,tone,dur):
 	grain = openFile(grain)
 	outRay=[]
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-
-	inGrain = []
-	for sample in range(len(grain)):
-		for multiply in range(1000):
-			inGrain.append(grain[sample])
-
-	for moment in range(inDur*1000):
+	for moment in range(inDur):
 		outRay.append(0.)
-
-	for instance in range(int(inDur/(len(inGrain)*tone))):
-		for moment in range(len(inGrain)):
-			outRay[instance*int((len(inGrain)*tone))+moment]=inGrain[moment]
-
-	compressRay=[]
-	for period in range(len(outRay)/1000):
-		value = 0
-		for sample in range(1000):
-			value+=outRay[(period*1000)+sample]
-		value=value/1000
-		compressRay.append(value)
-	outRay=compressRay
+	for instance in range(int(inDur/(len(grain)*tone))):
+		for moment in range(len(grain)):
+			outRay[(instance*len(grain))+moment]=grain[moment]
 	return outRay
 
 
@@ -239,6 +223,34 @@ def buildSong(whereAt,durRay,songRay,level): #whereAt is (WhichBar, which of not
 	whereAtIn = whereAt*(noteDur/oneSec)*sampleRate
 	for vapp in range(len(durRay)):
 		songRay[vapp+int(whereAtIn)] += durRay[vapp] *(level/1000.)
+
+def tenTimesRate(durRay):
+	outRay=[]
+	for moment in range(len(durRay)*10):
+		outRay.append(0.)
+	for moment in range(len(durRay)):
+		outRay[moment*10]=durRay[moment]
+	for moment in range(len(durRay)-1):
+		decileSize = durRay[moment]-durRay[moment+1]
+		decileSize = decileSize/10
+		for decile in range(10):
+			outRay[(moment*10)+decile]= durRay[moment]-(decileSize*decile)
+	for lastMoment in range(10):
+		outRay[len(outRay)-lastMoment]=outRay[len(outRay)-10]-(decileSize*lastMoment)
+	return outRay
+
+def tenthRate(durRay):
+	outRay=[]
+	for moment in range(len(durRay)/10):
+		outRay.append(0.)
+	for moment in range(len(outRay)):
+		value = 0
+		for decile in range(10):
+			value+=durRay[(moment*10)+decile]
+			value=value/10
+		outRay[moment]=value
+
+
 
 def openFile(fileName): # If you have a .wav file you want to manipulate it, you can load it into an array with this function
 	outRay = []
@@ -398,6 +410,7 @@ def zethre(durRay,source,ear): # Add the '0th reflection', ie, simulate how it w
 	return outRay
 
 def halfSpeed(durRay):
+	print 'halfSpeed INPUT length', len(durRay)
 	outRay =[]
 	for moment in range(len(durRay)):
 		outRay.append(0.)
@@ -406,6 +419,7 @@ def halfSpeed(durRay):
 		outRay[(moment*2)]=durRay[moment]
 	for moment in range((len(outRay)/2)-1):
 		outRay[(moment*2)+1]=outRay[moment*2]-((outRay[(moment*2)]-outRay[(moment*2)+2])/2.)
+	print len(outRay)
 	return outRay
 
 def doubleSpeed(durRay):
@@ -442,8 +456,49 @@ def divideSpeed(durRay,divisions):
 			outRay[moment+(gap+1)]=outRay[moment*divisions]-(difference*(gap+1))
 	return outRay
 
+def factorize(fraction):
+	numeratorFactors,denominatorFactors=[],[]
+	wholeNumberEr=1
+	fraction=float(fraction)
+	while not (fraction*wholeNumberEr).is_integer():
+		wholeNumberEr+=1
+	denominator=wholeNumberEr
+	numerator=fraction*denominator
+	denominator,numerator=float(denominator),float(numerator)
+	factorCandidate = 2.
+	notDoneFactoring =True
+	while notDoneFactoring:
+		if (denominator/factorCandidate).is_integer():
+			denominator=denominator/factorCandidate
+			denominatorFactors.append(factorCandidate)
+			factorCandidate=2.
+		else:
+			factorCandidate+=1
+		if factorCandidate>denominator:
+			notDoneFactoring=False
+	factorCandidate = 2.
+	notDoneFactoring =True
+	while notDoneFactoring:
+		if (numerator/factorCandidate).is_integer():
+			numerator=numerator/factorCandidate
+			numeratorFactors.append(factorCandidate)
+			factorCandidate=2.
+		else:
+			factorCandidate+=1
+		if factorCandidate>numerator:
+			notDoneFactoring=False
+	return [numeratorFactors,denominatorFactors]
 
-
+def changeSpeed(durRay,speedChange):
+	numerators,denominators=factorize(speedChange)
+	multiply=1
+	divide=1
+	for number in numerators:
+		multiply=multiply*number
+	for number in denominators:
+		divide=divide*number
+	print 'WOW'
+	return multiplySpeed(divideSpeed(durRay,int(divide)),int(multiply))
 
 ##### This one doesnt work
 def lopass(durRay,cutov):
