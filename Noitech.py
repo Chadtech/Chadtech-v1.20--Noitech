@@ -498,7 +498,6 @@ def changeSpeed(durRay,speedChange):
 		multiply=multiply*number
 	for number in denominators:
 		divide=divide*number
-	print 'WOW'
 	return multiplySpeed(divideSpeed(durRay,int(divide)),int(multiply))
 
 ##### This one doesnt work
