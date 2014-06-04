@@ -521,6 +521,30 @@ def shiftSamples(durRay,shiftMag): #shiftMag must be between -1 and 1
 			outRay[moment]=((1-shiftMag)*durRay[moment+1])+(durRay[moment]*shiftMag)
 	return outRay
 
+def grainSynth(durRay,freqInc,grainLength):
+	inputLength=len(durRay)
+	freqAdjGrainLength=freqInc*grainLength
+	grains=[]
+	for section in range(len(durRay)/grainLength):
+		grain=[]
+		for moment in range(int(freqAdjGrainLength)):
+			if len(durRay)>((section*grainLength)+moment):
+				grain.append(durRay[(section*grainLength)+moment])
+		grains.append(grain)
+	grain=[]
+	for moment in range(len(durRay)-((len(durRay)/grainLength)*grainLength)):
+		grain.append(durRay[moment+((len(durRay)/grainLength)*grainLength)])
+	grains.append(grain)
+	for grain in range(len(grains)):
+		grains[grain]=changeSpeed(grains[grain],freqInc)
+	outRay=[]
+	for grain in grains:
+		for moment in grain:
+			outRay.append(moment)
+	return outRay
+
+
+
 
 
 
