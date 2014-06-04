@@ -500,6 +500,31 @@ def changeSpeed(durRay,speedChange):
 		divide=divide*number
 	return multiplySpeed(divideSpeed(durRay,int(divide)),int(multiply))
 
+def shiftSamples(durRay,shiftMag): #shiftMag must be between -1 and 1
+	outRay=[]
+	dimRay=[]
+	if shiftMag>0:
+		shiftDirection = True
+	else:
+		shiftDirection = False
+	shiftMag=math.fabs(shiftMag)
+	for time in range(len(durRay)):
+		outRay.append(0.)
+		dimRay.append(durRay[time])
+	for moment in range(len(dimRay)):
+		dimRay[moment]/=1000.
+	if shiftDirection:
+		for moment in range(len(outRay)-1):
+			outRay[moment]=((1-shiftMag)*durRay[moment])+(durRay[moment+1]*shiftMag)
+	else:
+		for moment in range(len(outRay)-1):
+			outRay[moment]=((1-shiftMag)*durRay[moment+1])+(durRay[moment]*shiftMag)
+	return outRay
+
+
+
+
+
 ##### This one doesnt work
 def lopass(durRay,cutov):
 	outRay = durRay
