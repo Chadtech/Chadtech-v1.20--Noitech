@@ -433,3 +433,68 @@ def grainMake(grain,tone,dur):
 		for moment in range(len(grain)):
 			outRay[(instance*len(grain))+moment]=grain[moment]
 	return outRay
+
+def randomAdd(durRay,distance=30,magnitude=1.):
+	outRay=[]
+	for moment in durRay:
+		outRay.append(moment)
+	for moment in distance*[0]:
+		outRay.append(0.)
+	for moment in range(len(durRay)):
+		outRay[moment+distance]+=durRay[moment]*(magnitude*(float(random.randint(0,100))/100.))
+	return outRay
+
+##### This one doesnt work
+def lopass(durRay,cutov):
+	outRay = durRay
+	for vapp in range(len(durRay)-1):
+		outRay[vapp]=((outRay[vapp]+outRay[vapp+1])**(1+cutov/1000))/2
+	return outRay
+
+def halfSpeed(durRay):
+	print 'halfSpeed INPUT length', len(durRay)
+	outRay =[]
+	for moment in range(len(durRay)):
+		outRay.append(0.)
+		outRay.append(0.)
+	for moment in range(len(durRay)):
+		outRay[(moment*2)]=durRay[moment]
+	for moment in range(len(durRay)-1):
+		value = durRay[moment]+durRay[moment+1]
+		value /= 2.
+		outRay[(moment*2)+1]=value
+	return outRay
+
+def doubleSpeed(durRay):
+	outRay=[]
+	for moment in range((len(durRay)/2)):
+		outRay.append(0.)
+	for moment in range(len(outRay)):
+		outRay[moment]=(durRay[moment*2]+durRay[(moment*2)+1])/2
+	return outRay
+
+def tenTimesRate(durRay):
+	outRay=[]
+	for moment in range(len(durRay)*10):
+		outRay.append(0.)
+	for moment in range(len(durRay)):
+		outRay[moment*10]=durRay[moment]
+	for moment in range(len(durRay)-1):
+		decileSize = durRay[moment]-durRay[moment+1]
+		decileSize = decileSize/10
+		for decile in range(10):
+			outRay[(moment*10)+decile]= durRay[moment]-(decileSize*decile)
+	for lastMoment in range(10):
+		outRay[len(outRay)-lastMoment]=outRay[len(outRay)-10]-(decileSize*lastMoment)
+	return outRay
+
+def tenthRate(durRay):
+	outRay=[]
+	for moment in range(len(durRay)/10):
+		outRay.append(0.)
+	for moment in range(len(outRay)):
+		value = 0
+		for decile in range(10):
+			value+=durRay[(moment*10)+decile]
+			value=value/10
+		outRay[moment]=value

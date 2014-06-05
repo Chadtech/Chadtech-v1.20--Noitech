@@ -163,57 +163,29 @@ def harmize(tone,harmRay,dur): #Returns an array of a given tone, with a certain
 
 #--------------------------------Building
 
-def makeDur(dur): # Makes an empty array with the length given (dur) in notes of time length noteDur and sample length of noteDur/1000 * sampleRate
+def makeEmptyArray(dur): # Makes an empty array with the length given (dur) in notes of time length noteDur and sample length of noteDur/1000 * sampleRate
 	outRay = []
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for vapp in range(inDur):
+	for time in [0]*inDur:
 		outRay.append(0.)
 	return outRay
 
 def givDur(barNum,dur): #Returns the duration in samples, given the number of bars, number of notes per bar, and time duration of each note
 	return (noteDur/oneSec*sampleRate)*dur
 
-def buildSong(whereAt,durRay,songRay,level): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
+def AddTo(whereAt,durRay,canvasRay,level): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
 	whereAtIn = whereAt*(noteDur/oneSec)*sampleRate
 	for vapp in range(len(durRay)):
-		songRay[vapp+int(whereAtIn)] += durRay[vapp] *(level/1000.)
-
-def tenTimesRate(durRay):
-	outRay=[]
-	for moment in range(len(durRay)*10):
-		outRay.append(0.)
-	for moment in range(len(durRay)):
-		outRay[moment*10]=durRay[moment]
-	for moment in range(len(durRay)-1):
-		decileSize = durRay[moment]-durRay[moment+1]
-		decileSize = decileSize/10
-		for decile in range(10):
-			outRay[(moment*10)+decile]= durRay[moment]-(decileSize*decile)
-	for lastMoment in range(10):
-		outRay[len(outRay)-lastMoment]=outRay[len(outRay)-10]-(decileSize*lastMoment)
-	return outRay
-
-def tenthRate(durRay):
-	outRay=[]
-	for moment in range(len(durRay)/10):
-		outRay.append(0.)
-	for moment in range(len(outRay)):
-		value = 0
-		for decile in range(10):
-			value+=durRay[(moment*10)+decile]
-			value=value/10
-		outRay[moment]=value
-
-
+		canvasRay[vapp+int(whereAtIn)] += durRay[vapp] *(level/1000.)
 
 def openFile(fileName): # If you have a .wav file you want to manipulate, you can load it into an array with this function
 	outRay = []
-	vss = wave.open(fileName)
-	numFrams = vss.getnframes()
-	vssstr = vss.readframes(numFrams)
-	samples = struct.unpack_from('%dh'%numFrams,vssstr)
-	for yit in samples:
-		outRay.append(yit)
+	wavFile = wave.open(fileName)
+	numberOfFrames = wavFile.getnframes()
+	readAllTheFrames = wavFile.readframes(numberOfFrames)
+	samples = struct.unpack_from('%dh'%NumberOfFrames,readAllTheFrames)
+	for sample in samples:
+		outRay.append(sample)
 	return outRay
 
 def buildFile(song,fileName): #Turns input 'song' into .wav file.
@@ -386,28 +358,6 @@ def zethre(durRay,source,ear): # Add the '0th reflection', ie, simulate how it w
 		outRay[gno+int(lag)]=(4*inRay[gno])/(1+dist)
 	return outRay
 
-def halfSpeed(durRay):
-	print 'halfSpeed INPUT length', len(durRay)
-	outRay =[]
-	for moment in range(len(durRay)):
-		outRay.append(0.)
-		outRay.append(0.)
-	for moment in range(len(durRay)):
-		outRay[(moment*2)]=durRay[moment]
-	for moment in range(len(durRay)-1):
-		value = durRay[moment]+durRay[moment+1]
-		value /= 2.
-		outRay[(moment*2)+1]=value
-	return outRay
-
-def doubleSpeed(durRay):
-	outRay=[]
-	for moment in range((len(durRay)/2)):
-		outRay.append(0.)
-	for moment in range(len(outRay)):
-		outRay[moment]=(durRay[moment*2]+durRay[(moment*2)+1])/2
-	return outRay
-
 def multiplySpeed(durRay,multiples):
 	outRay=[]
 	for moment in range(len(durRay)/multiples):
@@ -520,19 +470,3 @@ def grainSynth(durRay,freqInc,grainLength):
 			outRay.append(moment)
 	return outRay
 
-def randomAdd(durRay,distance=30,magnitude=1.):
-	outRay=[]
-	for moment in durRay:
-		outRay.append(moment)
-	for moment in distance*[0]:
-		outRay.append(0.)
-	for moment in range(len(durRay)):
-		outRay[moment+distance]+=durRay[moment]*(magnitude*(float(random.randint(0,100))/100.))
-	return outRay
-
-##### This one doesnt work
-def lopass(durRay,cutov):
-	outRay = durRay
-	for vapp in range(len(durRay)-1):
-		outRay[vapp]=((outRay[vapp]+outRay[vapp+1])**(1+cutov/1000))/2
-	return outRay
