@@ -252,7 +252,7 @@ def tenthRate(durRay):
 
 
 
-def openFile(fileName): # If you have a .wav file you want to manipulate it, you can load it into an array with this function
+def openFile(fileName): # If you have a .wav file you want to manipulate, you can load it into an array with this function
 	outRay = []
 	vss = wave.open(fileName)
 	numFrams = vss.getnframes()
@@ -385,6 +385,29 @@ def volDrop(durRay,volPert): #Change the volume for an array as a whole values l
 		if vapp%((int(len(inRay)))/100)==0:
 			percent += 1
 			print percent, '%', 'volDrop'
+	return outRay
+
+def fadeOut(durRay,beginning=0,ending=''):
+	if type(ending)!=int or ending>len(durRay):
+		ending=len(durRay)
+	outRay=[]
+	for time in range(len(durRay)):
+		outRay.append(durRay[time])
+	for time in range(ending-beginning):
+		outRay[time+beginning]*=(((ending-beginning)-time)/float((ending-beginning)))
+	return outRay
+
+def fadeIn(durRay,beginning=0,ending=''):
+	if type(ending)!=int:
+		ending=len(durRay)
+	else:
+		if ending>len(durRay):
+			ending=len(durRay)
+	outRay=[]
+	for time in range(len(durRay)):
+		outRay.append(durRay[time])
+	for time in range(ending-beginning):
+		outRay[time+beginning]*=(1-(((ending-beginning)-time)/float((ending-beginning))))
 	return outRay
 
 def reverse(durRay): #Reverse the array
@@ -536,18 +559,25 @@ def grainSynth(durRay,freqInc,grainLength):
 		grain.append(durRay[moment+((len(durRay)/grainLength)*grainLength)])
 	grains.append(grain)
 	for grain in range(len(grains)):
-		grains[grain]=changeSpeed(grains[grain],freqInc)
+		if len(grains[grain]):
+			grains[grain]=changeSpeed(grains[grain],freqInc)
+			grains[grain]=fadeOut(grains[grain],beginning=(len(grains[grain])-30))
+			grains[grain]=fadeIn(grains[grain],ending=30)
 	outRay=[]
 	for grain in grains:
 		for moment in grain:
 			outRay.append(moment)
 	return outRay
 
-
-
-
-
-
+def randomAdd(durRay,distance=30,magnitude=1.):
+	outRay=[]
+	for moment in durRay:
+		outRay.append(moment)
+	for moment in distance*[0]:
+		outRay.append(0.)
+	for moment in range(len(durRay)):
+		outRay[moment+distance]+=durRay[moment]*(magnitude*(float(random.randint(0,100))/100.))
+	return outRay
 
 ##### This one doesnt work
 def lopass(durRay,cutov):
