@@ -468,16 +468,13 @@ def multiplySpeed(durRay,multiples):
 
 def divideSpeed(durRay,divisions):
 	outRay=[]
-	for moment in range(len(durRay)):
-		for times in range(divisions):
-			outRay.append(0.)
-	for moment in range(len(durRay)):
-		outRay[moment*divisions]=durRay[moment]
-	for moment in range((len(outRay)/divisions)-1):
-		difference=outRay[moment*divisions]-outRay[(moment*divisions)+divisions]
-		difference=difference/divisions
-		for gap in range((divisions)-1):
-			outRay[moment+(gap+1)]=outRay[moment*divisions]-(difference*(gap+1))
+	for moment in range(len(durRay)*divisions):
+		outRay.append(0.)
+	for moment in range(len(durRay)-1):
+		difference=durRay[moment]-durRay[moment+1]
+		difference/=float(divisions)
+		for gap in range(divisions):
+			outRay[(moment*divisions)+gap]=durRay[moment]+(difference*gap)
 	return outRay
 
 def factorize(fraction):
