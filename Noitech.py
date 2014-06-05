@@ -20,97 +20,66 @@ speedOfSound = 340.49/sampleRate
 songDur = (barNum*(noteDur/oneSec))*sampleRate
 fileName = ''
 
+######## 'Dur' is short for 'Duration'
+######## 'inDur' is the duration converted into samples
+####
+
+class Noitech():
+	def __init__(self,sampleRate=44100,amplitude=32767,noteLength=400.):
+		self.sampleRate=sampleRate
+		self.amplitude=ampltitude
+		self.noteLength=noteLength
+
 #------------------------------Tone making
 
-def makeTone(tone,dur): #Returns an array of a sine wave tone, for the input duration duration
-	values = []
+def makeTone(tone,dur): #Returns an array of a sine wave with frequency TONE, for duration DUR.
+	outRay = []
 	inTone = float(tone)/sampleRate
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for yit in range(inDur):
-		values.append(0.)
-	for vapp in range(inDur):
-		value = math.sin((vapp*2*math.pi*inTone))*amp
-		values[vapp] = value
-	return values
+	for time in [0]*inDur:
+		outRay.append(0.)
+	for index in range(inDur):
+		value = math.sin((index*2*math.pi*inTone))*amp
+		outRay[index] = value
+	return outRay
 
-def MakeToneModulus(tone,dur): #Returns an array of a given tone, over a certain time, at a certain decay rate. Decay rate of 1000 does not decay. 999 decays very quickly.
-	values = []
-	onePeriod = []
+def makeSaw(tone,dur,harmNum): #Make a saw tooth wave, at frequency TONE, for duration DUR. A saw tooth is a construction of harmonics, which approaches infinitely the saw tooth wave form. harmNum is how many of those harmonics to generate
+	outRay = []
 	inTone = float(tone)/sampleRate
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
 	for yit in range(inDur):
-		values.append(0.)
-		onePeriod.append(0.)
-	for vapp in range(int(sampleRate/float(tone))):
-		value = math.sin((vapp*2*math.pi*inTone))*amp
-		onePeriod[vapp] = value
-	for gno in range(inDur):
-		values[gno]=onePeriod[gno%len(onePeriod)]
-	return values
-
-def makeSaw(tone,dur): #Make a saw tooth wave
-	values = []
-	inTone = float(tone)/sampleRate
-	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for yit in range(inDur):
-		values.append(0.)
-	for vapp in range(inDur):
-		value = (amp - (((vapp*tone)%(sampleRate))/sampleRate)*amp) - (amp/2)
-		values[vapp]=value
-	return values
-
-def makeSawTrig(tone,dur,harmNum): #Make a saw tooth wave
-	values = []
-	inTone = float(tone)/sampleRate
-	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for yit in range(inDur):
-		values.append(0.)
+		outRay.append(0.)
 	for harmonic in range(1,harmNum):
 		for vapp in range(len(values)):
-			values[vapp]+= amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
-	return values
+			outRay[vapp]+= amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
+	return outRay
 
-def makeSawTrigEnharmonic(tone,dur,harmNum,enharmonicity=0.0007): #Make a saw tooth wave
-	values = []
+def makeSawEnharmonic(tone,dur,harmNum,enharmonicity=0.0007): #Make a saw tooth wave, but increase the frequency of the harmonics a small amount that scales with rhe harmonic number.
+	outRay = []
 	inTone = float(tone)/sampleRate
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for yit in range(inDur):
+	for time in [0]*inDur:
 		values.append(0.)
 	for harmonic in range(1,harmNum):
-		for vapp in range(len(values)):
-			values[vapp]+= amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic*enharmonicity)/harmonic)
-	return values
+		for moment in range(len(outRay)):
+			outRay[vapp]+= amp*((-1)**(harmonic))*(math.sin(moment*2*math.pi*inTone*harmonic*enharmonicity)/harmonic)
+	return moment
 
-def makeSawTrigMitDecayCompressed(tone,dur,harmNum,decayRate=8481.): #Make a saw tooth wave
-	values = []
+def makeSawMitDecay(tone,dur,harmNum,decayRate=8481.): #Make a saw tooth wave, but make it so the harmonics decay in volume, and the tonic increases in volume
+	outRay = []
 	inTone = float(tone)/sampleRate
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for yit in range(inDur):
-		values.append(0.)
+	for time in [0]*inDur:
+		outRay.append(0.)
 	for harmonic in range(1,harmNum):
-		for vapp in range(len(values)):
+		for moment in range(len(outRay)):
 			if harmonic>1:
-				values[vapp]+= (decayRate/((decayRate/20.)+(vapp*(harmNum))))*amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
+				outRay[moment]+= (decayRate/((decayRate/20.)+(moment*(harmNum))))*amp*((-1)**(harmonic))*(math.sin(moment*2*math.pi*inTone*harmonic)/harmonic)
 			else:
-				values[vapp]+= (1-(decayRate/(decayRate+(harmNum*3*vapp))))*amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
-	return values
+				outRay[moment]+= (1-(decayRate/(decayRate+(harmNum*3*moment))))*amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*harmonic)/harmonic)
+	return outRay
 
-def makeTriangle(tone,dur): #Make a Triangle wave
-	values = []
-	inTone = float(tone/2)/sampleRate
-	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for yit in range(inDur):
-		values.append(0.)
-	for vapp in range(inDur):
-		value = (amp - ((((vapp*(tone/2))%(sampleRate))/sampleRate)*amp) - (amp/2))
-		values[vapp]=value
-	for gno in range(len(values)):
-		values[gno]=math.fabs(values[gno])
-	for brs in range(len(values)):
-		values[brs] = (values[brs]*2) - (amp/2)
-	return values
-
-def makeSquareTrig(tone,dur,harmNum):
+def makeSquare(tone,dur,harmNum): #Make a square wave with frequency TONE, for duration DUR
 	values = []
 	inTone = float(tone)/sampleRate
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
@@ -121,52 +90,52 @@ def makeSquareTrig(tone,dur,harmNum):
 			values[vapp]+= amp*(math.sin(vapp*2*math.pi*inTone*((harmonic*2)-1))/(((harmonic*2)-1)))
 	return values
 
-def makeTriangleTrig(tone,dur,harmNum): #Make a Triangle Wave with trigonometry
-	values = []
+def makeTriangle(tone,dur,harmNum): #Make a triangle wave, with frequency TONE, for duration DUR
+	outRay = []
 	inTone = float(tone)/sampleRate
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for yit in range(inDur):
-		values.append(0.)
+	for time in [0]*inDur:
+		outRay.append(0.)
 	for harmonic in range(harmNum):
-		for vapp in range(len(values)):
-			values[vapp]+= amp*((-1)**(harmonic))*(math.sin(vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
-	return values
+		for moment in range(len(outRay)):
+			outRay[moment]+= amp*((-1)**(harmonic))*(math.sin(moment*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
+	return outRay
 
 def makeTriangleEnharmonic(tone,dur,harmNum): #Make a Triangle Wave with enharmonics
-	values = []
+	outRay = []
 	inTone = float(tone)/sampleRate
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for yit in range(inDur):
-		values.append(0.)
+	for time in [0]*inDur:
+		outRay.append(0.)
 	for harmonic in range(harmNum):
-		for vapp in range(len(values)):
-			values[vapp]+= amp*((-1)**(harmonic))*(math.sin((1+harmonic*(0.0013))*vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
-	return values
+		for moment in range(len(outRay)):
+			outRay[moment]+= amp*((-1)**(harmonic))*(math.sin((1+harmonic*(0.0013))*moment*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
+	return outRay
 
-def makeTriangleEnharmonicMitDecay(tone,dur,harmNum): #Make a Triangle Wave with enharmonics
-	values = []
+def makeTriangleEnharmonicMitDecay(tone,dur,harmNum): #Make a Triangle Wave with enharmonics, and with harmonic decay
+	outRay = []
 	inTone = float(tone)/sampleRate
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for yit in range(inDur):
-		values.append(0.)
+	for time in [0]*inDur:
+		outRay.append(0.)
 	for harmonic in range(harmNum):
-		for vapp in range(len(values)):
-			values[vapp]+= (4410/(4410+(vapp*harmNum)))*amp*((-1)**(harmonic))*(math.sin((1+harmonic*(0.0013))*vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
-	return values
+		for moment in range(len(outRay)):
+			outRay[moment]+= (4410/(4410+(moment*harmNum)))*amp*((-1)**(harmonic))*(math.sin((1+harmonic*(0.0013))*moment*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2))
+	return outRay
 
 def makeTriangleEnharmonicMitDecayCompressed(tone,dur,harmNum): #Make a Triangle Wave with enharmonics
-	values = []
+	outRay = []
 	inTone = float(tone)/sampleRate
 	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for yit in range(inDur):
+	for time in [0]*inDur:
 		values.append(0.)
 	for harmonic in range(harmNum):
-		for vapp in range(len(values)):
+		for moment in range(len(outRay)):
 			if harmonic>0:
-				values[vapp]+= ((8481./(481.+(vapp*(harmNum))))*2*amp*((-1)**(harmonic))*(math.sin((1+(harmonic*(0.00007)))*vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2)))
+				outRay[moment]+= ((8481./(481.+(moment*(harmNum))))*2*amp*((-1)**(harmonic))*(math.sin((1+(harmonic*(0.00007)))*moment*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2)))
 			else:
-				values[vapp]+= ((1-(8481./(8481.+(harmNum*3*vapp))))*amp*((-1)**(harmonic))*(math.sin((1+(harmonic*(0.00007)))*vapp*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2)))
-	return values
+				outRay[moment]+= ((1-(8481./(8481.+(harmNum*3*moment))))*amp*((-1)**(harmonic))*(math.sin((1+(harmonic*(0.00007)))*moment*2*math.pi*inTone*((harmonic*2)+1))/(((harmonic*2)+1)**2)))
+	return outRay
 
 def harmize(tone,harmRay,dur): #Returns an array of a given tone, with a certain set of harmonics. The harmonics come in an array where each element is (harmonic, relativel Volume, volSlop)
 	outRay=[]
@@ -177,35 +146,20 @@ def harmize(tone,harmRay,dur): #Returns an array of a given tone, with a certain
 	for yit in range(inDur):
 		outRay.append(0.)
 		tempoRay.append(0.)
-	for vapp in range(len(harmRay)):
-		harmH, harmVol, volSlop = harmRay[vapp]
+	for parameters in range(len(harmRay)):
+		harmH, harmVol, volSlop = harmRay[parameters]
 		inTone = float(tone*harmH)/sampleRate
 		volSlop = (volSlop/1000. + 999.)/1000.
-		for  quoo in range(inDur):
-			value = (math.sin((quoo*2*math.pi*inTone))*amp)
+		for  moment in range(inDur):
+			value = (math.sin((moment*2*math.pi*inTone))*amp)
 			value = value*(harmVol/1000.)
-			tempoRay[quoo] = value
-		for  gno in range(len(tempoRay)):
-			tempoRay[gno]=tempoRay[gno]*(volSlop**gno)
+			tempoRay[moment] = value
+		for  moment in range(len(tempoRay)):
+			tempoRay[moment]=tempoRay[moment]*(volSlop**moment)
 		percent = 0
-		for dukh in range(inDur):
-			outRay[dukh]+=tempoRay[dukh]
+		for moment in range(inDur):
+			outRay[moment]+=tempoRay[moment]
 	return outRay
-
-	for vapp in range(len(durRay)):
-		inRay[vapp] = inRay[vapp]*(volSlop**vapp)
-
-def grainMake(grain,tone,dur):
-	grain = openFile(grain)
-	outRay=[]
-	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for moment in range(inDur):
-		outRay.append(0.)
-	for instance in range(int(inDur/(len(grain)*tone))):
-		for moment in range(len(grain)):
-			outRay[(instance*len(grain))+moment]=grain[moment]
-	return outRay
-
 
 #--------------------------------Building
 

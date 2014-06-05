@@ -381,3 +381,55 @@ def twthre(durRay,source,ear,room,loss,howMuchNoise,aftaNoise,allpass): #How dur
 			percent += 1
 			print percent, '%', 'TWTHRE'
 	return outRay
+
+def MakeToneModulus(tone,dur): 
+	values = []
+	onePeriod = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for yit in range(inDur):
+		values.append(0.)
+		onePeriod.append(0.)
+	for vapp in range(int(sampleRate/float(tone))):
+		value = math.sin((vapp*2*math.pi*inTone))*amp
+		onePeriod[vapp] = value
+	for gno in range(inDur):
+		values[gno]=onePeriod[gno%len(onePeriod)]
+	return values
+
+def makeSawModulus(tone,dur): #Make a saw tooth wave
+	outRay = []
+	inTone = float(tone)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for time in inDur*[0]:
+		outRay.append(0.)
+	for index in range(inDur):
+		value = (amp - (((index*tone)%(sampleRate))/sampleRate)*amp) - (amp/2)
+		outRay[vapp]=value
+	return outRay
+
+def makeTriangle(tone,dur): #Make a Triangle wave
+	outRay = []
+	inTone = float(tone/2)/sampleRate
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for moment in [0]*inDur:
+		values.append(0.)
+	for moment in [0]*inDur:
+		value = (amp - ((((moment*(tone/2))%(sampleRate))/sampleRate)*amp) - (amp/2))
+		outRay[moment]=value
+	for moment in range(len(outRay)):
+		outRay[moment]=math.fabs(outRay[moment])
+	for moment in range(len(outRay)):
+		outRay[moment] = (outRay[moment]*2) - (amp/2)
+	return outRay
+
+def grainMake(grain,tone,dur):
+	grain = openFile(grain)
+	outRay=[]
+	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for moment in range(inDur):
+		outRay.append(0.)
+	for instance in range(int(inDur/(len(grain)*tone))):
+		for moment in range(len(grain)):
+			outRay[(instance*len(grain))+moment]=grain[moment]
+	return outRay
