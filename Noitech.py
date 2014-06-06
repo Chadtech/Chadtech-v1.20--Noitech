@@ -173,7 +173,7 @@ def makeEmptyArray(dur): # Makes an empty array with the length given (dur) in n
 def givDur(barNum,dur): #Returns the duration in samples, given the number of bars, number of notes per bar, and time duration of each note
 	return (noteDur/oneSec*sampleRate)*dur
 
-def AddTo(whereAt,durRay,canvasRay,level): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
+def AddTo(whereAt,durRay,canvasRay,level=1000.): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
 	whereAtIn = whereAt*(noteDur/oneSec)*sampleRate
 	for vapp in range(len(durRay)):
 		canvasRay[vapp+int(whereAtIn)] += durRay[vapp] *(level/1000.)
@@ -183,7 +183,7 @@ def openFile(fileName): # If you have a .wav file you want to manipulate, you ca
 	wavFile = wave.open(fileName)
 	numberOfFrames = wavFile.getnframes()
 	readAllTheFrames = wavFile.readframes(numberOfFrames)
-	samples = struct.unpack_from('%dh'%NumberOfFrames,readAllTheFrames)
+	samples = struct.unpack_from('%dh'%numberOfFrames,readAllTheFrames)
 	for sample in samples:
 		outRay.append(sample)
 	return outRay
@@ -446,6 +446,7 @@ def shiftSamples(durRay,shiftMag): #shiftMag must be between -1 and 1
 	return outRay
 
 def grainSynth(durRay,freqInc,grainLength):
+	grainLength=int(grainLength)
 	inputLength=len(durRay)
 	freqAdjGrainLength=freqInc*grainLength
 	grains=[]
