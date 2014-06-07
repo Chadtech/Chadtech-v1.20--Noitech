@@ -445,7 +445,7 @@ def shiftSamples(durRay,shiftMag): #shiftMag must be between -1 and 1
 			outRay[moment]=((1-shiftMag)*durRay[moment+1])+(durRay[moment]*shiftMag)
 	return outRay
 
-def grainSynth(durRay,freqInc,grainLength):
+def grainSynth(durRay,freqInc,grainLength,fade=True):
 	grainLength=int(grainLength)
 	inputLength=len(durRay)
 	freqAdjGrainLength=freqInc*grainLength
@@ -460,14 +460,32 @@ def grainSynth(durRay,freqInc,grainLength):
 	for moment in range(len(durRay)-((len(durRay)/grainLength)*grainLength)):
 		grain.append(durRay[moment+((len(durRay)/grainLength)*grainLength)])
 	grains.append(grain)
-	for grain in range(len(grains)):
-		if len(grains[grain]):
-			grains[grain]=changeSpeed(grains[grain],freqInc)
-			grains[grain]=fadeOut(grains[grain],beginning=(len(grains[grain])-30))
-			grains[grain]=fadeIn(grains[grain],ending=30)
+	if fade:
+		for grain in range(len(grains)):
+			if len(grains[grain]):
+				grains[grain]=changeSpeed(grains[grain],freqInc)
+				grains[grain]=fadeOut(grains[grain],beginning=(len(grains[grain])-30))
+				grains[grain]=fadeIn(grains[grain],ending=30)
+	else:
+		for grain in range(len(grains)):
+			if len(grains[grain]):
+				grains[grain]=changeSpeed(grains[grain],freqInc)
 	outRay=[]
 	for grain in grains:
 		for moment in grain:
 			outRay.append(moment)
 	return outRay
+
+def grabSample(durRay,sampleLength):
+	sampleLength=int(sampleLength)
+	outRay=[]
+	if sampleLength<len(durRay):
+		whichPart = random.randint(0,len(durRay)-sampleLength)
+	for moment in range(sampleLength):
+		outRay.append(durRay[whichPart+moment])
+	return outRay
+
+def declip(durRay,margin=30):
+	return fadeIn(fadeOut(durRay,len(durRay)-margin,len(durRay)),0,margin)
+
 
