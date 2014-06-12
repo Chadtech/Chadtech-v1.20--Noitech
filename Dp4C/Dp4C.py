@@ -38,7 +38,7 @@ note = {
 	'F':tones[15]
 }
 
-basic = openFile('basic_sample.wav')
+basic = openFile('basic_sample1.wav')
 
 noteDur=300.
 

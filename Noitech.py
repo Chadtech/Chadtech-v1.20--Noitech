@@ -163,20 +163,30 @@ def harmize(tone,harmRay,dur): #Returns an array of a given tone, with a certain
 
 #--------------------------------Building
 
-def makeEmptyArray(dur): # Makes an empty array with the length given (dur) in notes of time length noteDur and sample length of noteDur/1000 * sampleRate
-	outRay = []
-	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for time in [0]*inDur:
-		outRay.append(0.)
+def concatenate(durRay0,durRay1):
+	outRay=[]
+	for moment in range(len(durRay0)):
+		outRay.append(durRay0[moment])
+	for moment in range(len(durRay1)):
+		outRay.append(durRay1[moment])
 	return outRay
+
+
+def makeEmptyArray(dur): # Makes an empty array with the length given (dur) in notes of time length noteDur and sample length of noteDur/1000 * sampleRate
+	return dur*[0]
 
 def givDur(barNum,dur): #Returns the duration in samples, given the number of bars, number of notes per bar, and time duration of each note
 	return (noteDur/oneSec*sampleRate)*dur
 
-def AddTo(whereAt,durRay,canvasRay,level=1000.): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
+def addTo(whereAt,durRay,canvasRay,level=1000.): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
 	whereAtIn = whereAt*(noteDur/oneSec)*sampleRate
 	for vapp in range(len(durRay)):
 		canvasRay[vapp+int(whereAtIn)] += durRay[vapp] *(level/1000.)
+
+def removeFrom(whereAt,durRay,canvasRay,level=1000.): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
+	whereAtIn = whereAt*(noteDur/oneSec)*sampleRate
+	for vapp in range(len(durRay)):
+		canvasRay[vapp+int(whereAtIn)] -= durRay[vapp] *(level/1000.)
 
 def openFile(fileName): # If you have a .wav file you want to manipulate, you can load it into an array with this function
 	outRay = []
@@ -188,34 +198,86 @@ def openFile(fileName): # If you have a .wav file you want to manipulate, you ca
 		outRay.append(sample)
 	return outRay
 
-def buildFile(song,fileName): #Turns input 'song' into .wav file.
+def buildFile(fileName,firstChannel,secondChannel=''): #Turns input 'song' into .wav file.
 	if not fileName.endswith('.wav'):
 		fileName=fileName+'.wav'
-	noise_output = wave.open(fileName, 'w')
-	noise_output.setparams((1, 2, sampleRate, 0, 'NONE', 'not compressed'))	
 	percent = 0
-	for yit in range(len(song)):
-		if song[yit] < 32767 and song[yit] > -32767:
-			packed_value = struct.pack('h', (song[yit]))
-			noise_output.writeframes(packed_value)
-			if yit%(int(len(song))/100)==0:
+	output = wave.open(fileName, 'w')
+	if type(secondChannel)==str:
+		output.setparams((1, 2, sampleRate, 0, 'NONE', 'not compressed'))	
+		for moment in range(len(firstChannel)):
+			if firstChannel[moment] > 32767:
+				value = 32767
+			elif firstChannel[moment] < -32767:
+				value = -32767
+			else:
+				value = firstChannel[moment]
+			packed_value = struct.pack('h', value)
+			output.writeframes(packed_value)
+			if moment%(int(len(firstChannel))/100.)==0:
 				percent += 1
-				print percent, '%', song[yit], fileName
+				print percent, '%', firstChannel[moment], fileName
+		print fileName, 'is done'
+		output.close()
+	elif type(secondChannel)==list:
+		output.setparams((2, 2, sampleRate, 0, 'NONE', 'not compressed'))
+		durationAdjustedFirstChannel =[]
+		durationAdjustedSecondChannel=[]
+		##### The channels need to be the same length, otherwise there will be problems
+		if len(firstChannel)!=len(secondChannel):
+			##### If one channel is longer than the other, we create two new channels and fill them with the old ones, but fill in the end of the second one with silence
+			if len(firstChannel)>len(secondChannel):
+				for moment in range(len(secondChannel)):
+					durationAdjustedFirstChannel.append(firstChannel[moment])
+					durationAdjustedSecondChannel.append(secondChannel[moment])
+				for moment in range(int(math.fabs(len(firstChannel)-len(secondChannel)))):
+					durationAdjustedFirstChannel.append(firstChannel[moment+(len(firstChannel)-(int(math.fabs(len(firstChannel)-len(secondChannel)))))])
+					durationAdjustedSecondChannel.append(0)
+			else:
+				for moment in range(len(firstChannel)):
+					durationAdjustedFirstChannel.append(firstChannel[moment])
+					durationAdjustedSecondChannel.append(secondChannel[moment])
+				for moment in range(int(math.fabs(len(firstChannel)-len(secondChannel)))):
+					durationAdjustedSecondChannel.append(secondChannel[moment+(len(secondChannel)-(int(math.fabs(len(firstChannel)-len(secondChannel)))))])
+					durationAdjustedFirstChannel.append(0)
+			##### Make sure the amplitudes of the channels are within the range 2 bytes
+			for channel in [durationAdjustedFirstChannel,durationAdjustedSecondChannel]:
+				for moment in range(len(channel)):
+					if channel[moment] > 32767:
+						channel[moment]=32767
+					elif channel[moment] < -32767:
+						channel[moment]=-32767
+			##### Put the chanels in the file
+			for moment in range(len(durationAdjustedFirstChannel)):
+				packedValue = struct.pack('h', durationAdjustedFirstChannel[moment])
+				output.writeframes(packedValue)
+				packedValue = struct.pack('h', durationAdjustedSecondChannel[moment])
+				output.writeframes(packedValue)
+				if moment%(int(len(durationAdjustedFirstChannel))/100.)==0:
+					percent += 1
+					print percent, '%', durationAdjustedFirstChannel[moment], fileName
+			print fileName, 'is done'
+			output.close()
 		else:
-			if song[yit] >= 32767:
-				packed_value = struct.pack('h', 32767)
-				noise_output.writeframes(packed_value)
-				if yit%(int(len(song))/100)==0:
+			for channel in [firstChannel,secondChannel]:
+				for moment in range(len(channel)):
+					if channel[moment] > 32767:
+						channel[moment]=32767
+					elif channel[moment] < -32767:
+						channel[moment]=-32767
+			##### Put the chanels in the file
+			for moment in range(len(firstChannel)):
+				packedValue = struct.pack('h', firstChannel[moment])
+				output.writeframes(packedValue)
+				packedValue = struct.pack('h', secondChannel[moment])
+				output.writeframes(packedValue)
+				if moment%(int(len(firstChannel))/100.)==0:
 					percent += 1
-					print percent, '%', song[yit]
-			if song[yit] <= -32767:
-				packed_value = struct.pack('h', -32767)
-				noise_output.writeframes(packed_value)
-				if yit%(int(len(song))/100)==0:
-					percent += 1
-					print percent, '%', song[yit]
-	print fileName, 'is done'
-	noise_output.close()
+					print percent, '%', firstChannel[moment], fileName
+			print fileName, 'is done'
+			output.close()
+
+
 
 #--------------------------------Effects
 
