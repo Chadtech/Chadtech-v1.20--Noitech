@@ -565,6 +565,40 @@ def factorize(fraction):
 			notDoneFactoring=False
 	return [numeratorFactors,denominatorFactors]
 
+def standardDeviation(durRay):
+	averageValue=0
+	for index in range(len(durRay)):
+		averageValue+=durRay[index]
+	averageValue/=float(len(durRay))
+	differences =[]
+	for index in range(len(durRay)):
+		differences.append((durRay[index]-averageValue)**2)
+	differenceAverage=0
+	for difference in (range(len(differences))):
+		differenceAverage+=differences[difference]
+	differenceAverage/=float(len(differences))
+	return (differenceAverage)**(0.5)
+
+def covariance(firstRay,seconRay):
+	firstAve = 0
+	seconAve = 0	
+	if len(firstRay)==len(seconRay):
+		for sample in range(len(firstRay)):
+			firstAve+=firstRay[sample]
+			seconAve+=seconRay[sample]
+		firstAve/=float(len(firstRay))
+		seconAve/=float(len(seconRay))
+		variance = 0
+		for sample in range(len(firstRay)):
+			variance+=(firstRay[sample]-firstAve)*(seconRay[sample]-seconAve)
+		variance*=(1/float((len(firstRay)-1)))
+		return variance
+	else:
+		return 'Chadtech ERROR CODE 0: Array Arguments must be same length (and they arent)'
+
+def correlation(firstRay,seconRay):
+	return covariance(firstRay,seconRay)/(standardDeviation(firstRay)*standardDeviation(seconRay))
+
 def changeSpeed(durRay,speedChange):
 	numerators,denominators=factorize(speedChange)
 	multiply=1
@@ -625,36 +659,6 @@ def grainSynth(durRay,freqInc,grainLength,fade=True):
 	for grain in grains:
 		for moment in grain:
 			outRay.append(moment)
-	return outRay
-
-def grainSynth1(durRay,freqInc,grainLength,fade=True):
-	grainLength=int(grainLength)
-	inputLength=len(durRay)
-	freqAdjGrainLength=freqInc*grainLength
-	grains=[]
-	for section in range(len(durRay)/grainLength):
-		grain=[]
-		for moment in range(int(freqAdjGrainLength)):
-			if len(durRay)>((section*grainLength)+moment):
-				grain.append(durRay[(section*grainLength)+moment])
-		grains.append(grain)
-	grain=[]
-	for moment in range(len(durRay)-((len(durRay)/grainLength)*grainLength)):
-		grain.append(durRay[moment+((len(durRay)/grainLength)*grainLength)])
-	grains.append(grain)
-	for grain in range(len(grains)):
-		if len(grains[grain]):
-			grains[grain]=changeSpeed(grains[grain],freqInc)
-	outRay=[]
-	for grain in grains:
-		for moment in grain:
-			outRay.append(moment)
-	for grainSection in range(1,len(grains)-1):
-		#print 'grain section and total grain sections', grainSection, len(grains),'grainSection*int(grainLength) : ', grainSection*int(grainLength), 'len(outRay) :', len(outRay)
-		difference=outRay[grainSection*int(grainLength)]-outRay[(grainSection*int(grainLength))-30]
-		difference/=30.
-		for moment in range(30):
-			outRay[(grainSection*int(grainLength))-moment]=(outRay[(grainSection*int(grainLength))-moment]*((30-moment)/30.))+(outRay[(grainSection*int(grainLength))]*(moment/30.))
 	return outRay
 
 def grabSample(durRay,sampleLength):
