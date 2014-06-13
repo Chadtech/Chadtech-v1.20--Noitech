@@ -43,6 +43,17 @@ def makeTone(tone,dur): #Returns an array of a sine wave with frequency TONE, fo
 		outRay[index] = value
 	return outRay
 
+def makeToneMitSamps(tone,dur): #Returns an array of a sine wave with frequency TONE, for duration DUR.
+	outRay = []
+	#inTone = float(tone)/sampleRate
+	#inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
+	for time in [0]*dur:
+		outRay.append(0.)
+	for index in range(dur):
+		value = math.sin((index*2*math.pi*tone))*amp
+		outRay[index] = value
+	return outRay
+
 def makeSaw(tone,dur,harmNum): #Make a saw tooth wave, at frequency TONE, for duration DUR. A saw tooth is a construction of harmonics, which approaches infinitely the saw tooth wave form. harmNum is how many of those harmonics to generate
 	outRay = []
 	inTone = float(tone)/sampleRate
@@ -198,7 +209,7 @@ def openFile(fileName): # If you have a .wav file you want to manipulate, you ca
 		outRay.append(sample)
 	return outRay
 
-def buildFile(fileName,firstChannel,secondChannel=''): #Turns input 'song' into .wav file.
+def buildFileSlow(fileName,firstChannel,secondChannel=''): #Turns input 'song' into .wav file.
 	if not fileName.endswith('.wav'):
 		fileName=fileName+'.wav'
 	percent = 0
@@ -277,6 +288,84 @@ def buildFile(fileName,firstChannel,secondChannel=''): #Turns input 'song' into 
 			print fileName, 'is done'
 			output.close()
 
+def buildFile(fileName,firstChannel,secondChannel=''): #Turns input 'song' into .wav file.
+	if not fileName.endswith('.wav'):
+		fileName=fileName+'.wav'
+	percent = 0
+	output = wave.open(fileName, 'w')
+	if type(secondChannel)==str:
+		output.setparams((1, 2, sampleRate, 0, 'NONE', 'not compressed'))	
+		for moment in range(len(firstChannel)):
+			if firstChannel[moment] > 32767:
+				value = 32767
+			elif firstChannel[moment] < -32767:
+				value = -32767
+			else:
+				value = firstChannel[moment]
+			packed_value = struct.pack('h', value)
+			output.writeframesraw(packed_value)
+			if moment%(int(len(firstChannel))/100.)==0:
+				percent += 1
+				print percent, '%', firstChannel[moment], fileName
+		print fileName, 'is done'
+		output.close()
+	elif type(secondChannel)==list:
+		output.setparams((2, 2, sampleRate, 0, 'NONE', 'not compressed'))
+		durationAdjustedFirstChannel =[]
+		durationAdjustedSecondChannel=[]
+		##### The channels need to be the same length, otherwise there will be problems
+		if len(firstChannel)!=len(secondChannel):
+			##### If one channel is longer than the other, we create two new channels and fill them with the old ones, but fill in the end of the second one with silence
+			if len(firstChannel)>len(secondChannel):
+				for moment in range(len(secondChannel)):
+					durationAdjustedFirstChannel.append(firstChannel[moment])
+					durationAdjustedSecondChannel.append(secondChannel[moment])
+				for moment in range(int(math.fabs(len(firstChannel)-len(secondChannel)))):
+					durationAdjustedFirstChannel.append(firstChannel[moment+(len(firstChannel)-(int(math.fabs(len(firstChannel)-len(secondChannel)))))])
+					durationAdjustedSecondChannel.append(0)
+			else:
+				for moment in range(len(firstChannel)):
+					durationAdjustedFirstChannel.append(firstChannel[moment])
+					durationAdjustedSecondChannel.append(secondChannel[moment])
+				for moment in range(int(math.fabs(len(firstChannel)-len(secondChannel)))):
+					durationAdjustedSecondChannel.append(secondChannel[moment+(len(secondChannel)-(int(math.fabs(len(firstChannel)-len(secondChannel)))))])
+					durationAdjustedFirstChannel.append(0)
+			##### Make sure the amplitudes of the channels are within the range 2 bytes
+			for channel in [durationAdjustedFirstChannel,durationAdjustedSecondChannel]:
+				for moment in range(len(channel)):
+					if channel[moment] > 32767:
+						channel[moment]=32767
+					elif channel[moment] < -32767:
+						channel[moment]=-32767
+			##### Put the chanels in the file
+			for moment in range(len(durationAdjustedFirstChannel)):
+				packedValue = struct.pack('h', durationAdjustedFirstChannel[moment])
+				output.writeframesraw(packedValue)
+				packedValue = struct.pack('h', durationAdjustedSecondChannel[moment])
+				output.writeframesraw(packedValue)
+				if moment%(int(len(durationAdjustedFirstChannel))/100.)==0:
+					percent += 1
+					print percent, '%', durationAdjustedFirstChannel[moment], fileName
+			print fileName, 'is done'
+			output.close()
+		else:
+			for channel in [firstChannel,secondChannel]:
+				for moment in range(len(channel)):
+					if channel[moment] > 32767:
+						channel[moment]=32767
+					elif channel[moment] < -32767:
+						channel[moment]=-32767
+			##### Put the chanels in the file
+			for moment in range(len(firstChannel)):
+				packedValue = struct.pack('h', firstChannel[moment])
+				output.writeframesraw(packedValue)
+				packedValue = struct.pack('h', secondChannel[moment])
+				output.writeframesraw(packedValue)
+				if moment%(int(len(firstChannel))/100.)==0:
+					percent += 1
+					print percent, '%', firstChannel[moment], fileName
+			print fileName, 'is done'
+			output.close()
 
 
 #--------------------------------Effects
@@ -536,6 +625,36 @@ def grainSynth(durRay,freqInc,grainLength,fade=True):
 	for grain in grains:
 		for moment in grain:
 			outRay.append(moment)
+	return outRay
+
+def grainSynth1(durRay,freqInc,grainLength,fade=True):
+	grainLength=int(grainLength)
+	inputLength=len(durRay)
+	freqAdjGrainLength=freqInc*grainLength
+	grains=[]
+	for section in range(len(durRay)/grainLength):
+		grain=[]
+		for moment in range(int(freqAdjGrainLength)):
+			if len(durRay)>((section*grainLength)+moment):
+				grain.append(durRay[(section*grainLength)+moment])
+		grains.append(grain)
+	grain=[]
+	for moment in range(len(durRay)-((len(durRay)/grainLength)*grainLength)):
+		grain.append(durRay[moment+((len(durRay)/grainLength)*grainLength)])
+	grains.append(grain)
+	for grain in range(len(grains)):
+		if len(grains[grain]):
+			grains[grain]=changeSpeed(grains[grain],freqInc)
+	outRay=[]
+	for grain in grains:
+		for moment in grain:
+			outRay.append(moment)
+	for grainSection in range(1,len(grains)-1):
+		#print 'grain section and total grain sections', grainSection, len(grains),'grainSection*int(grainLength) : ', grainSection*int(grainLength), 'len(outRay) :', len(outRay)
+		difference=outRay[grainSection*int(grainLength)]-outRay[(grainSection*int(grainLength))-30]
+		difference/=30.
+		for moment in range(30):
+			outRay[(grainSection*int(grainLength))-moment]=(outRay[(grainSection*int(grainLength))-moment]*((30-moment)/30.))+(outRay[(grainSection*int(grainLength))]*(moment/30.))
 	return outRay
 
 def grabSample(durRay,sampleLength):
