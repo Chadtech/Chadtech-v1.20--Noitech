@@ -587,6 +587,21 @@ def covariance(firstRay,seconRay):
 def correlation(firstRay,seconRay):
 	return covariance(firstRay,seconRay)/(standardDeviation(firstRay)*standardDeviation(seconRay))
 
+def transform(durRay,harmonic):
+	fourierSummation = 0
+	for moment in range(len(durRay)):
+		fourierSummation += (durRay[harmonic]*(math.e**((2*math.pi*harmonic*moment)/len(durRay)))).real*44100
+	return fourierSummation
+
+def fourierTransform(durRay,harmonic=''):
+	if type(harmonic)==str:
+		fourierray = []
+		for harmonic in range(len(durRay)):
+			fourierray.append(transform(durRay,harmonic))
+		return fourierray
+	elif type(harmonic)==int:
+		return transform(durRay,harmonic)
+
 def changeSpeed(durRay,speedChange):
 	numerators,denominators=factorize(speedChange)
 	multiply=1
