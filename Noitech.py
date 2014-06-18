@@ -32,21 +32,9 @@ class Noitech():
 
 #------------------------------Tone making
 
+
 def makeTone(tone,dur): #Returns an array of a sine wave with frequency TONE, for duration DUR.
 	outRay = []
-	inTone = float(tone)/sampleRate
-	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for time in [0]*inDur:
-		outRay.append(0.)
-	for index in range(inDur):
-		value = math.sin((index*2*math.pi*inTone))*amp
-		outRay[index] = value
-	return outRay
-
-def makeToneMitSamps(tone,dur): #Returns an array of a sine wave with frequency TONE, for duration DUR.
-	outRay = []
-	#inTone = float(tone)/sampleRate
-	#inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
 	for time in [0]*dur:
 		outRay.append(0.)
 	for index in range(dur):
@@ -57,7 +45,6 @@ def makeToneMitSamps(tone,dur): #Returns an array of a sine wave with frequency 
 def makeSaw(tone,dur,harmNum): #Make a saw tooth wave, at frequency TONE, for duration DUR. A saw tooth is a construction of harmonics, which approaches infinitely the saw tooth wave form. harmNum is how many of those harmonics to generate
 	outRay = []
 	inTone = float(tone)/sampleRate
-	#inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
 	for yit in range(dur):
 		outRay.append(0.)
 	for harmonic in range(1,harmNum):
@@ -93,7 +80,6 @@ def makeSawMitDecay(tone,dur,harmNum,decayRate=8481.): #Make a saw tooth wave, b
 def makeSquare(tone,dur,harmNum): #Make a square wave with frequency TONE, for duration DUR
 	values = []
 	inTone = float(tone)/sampleRate
-	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
 	for yit in range(inDur):
 		values.append(0.)
 	for harmonic in range(1,harmNum):
