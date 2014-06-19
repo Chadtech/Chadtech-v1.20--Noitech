@@ -582,7 +582,7 @@ def covariance(firstRay,seconRay):
 		variance*=(1/float((len(firstRay)-1)))
 		return variance
 	else:
-		return 'Chadtech ERROR CODE 0: Array Arguments must be same length (and they arent)'
+		print 'Chadtech ERROR CODE 0: Array Arguments must be same length (and they arent)'
 
 def correlation(firstRay,seconRay):
 	return covariance(firstRay,seconRay)/(standardDeviation(firstRay)*standardDeviation(seconRay))
@@ -634,38 +634,94 @@ def shiftSamples(durRay,shiftMag): #shiftMag must be between -1 and 1
 	return outRay
 
 def grainSynth(durRay,freqInc,grainLength,fade=True):
-	try:
-		grainLength=int(grainLength)
-		inputLength=len(durRay)
-		freqAdjGrainLength=freqInc*grainLength
-		grains=[]
-		for section in range(len(durRay)/grainLength):
-			grain=[]
-			for moment in range(int(freqAdjGrainLength)):
-				if len(durRay)>((section*grainLength)+moment):
-					grain.append(durRay[(section*grainLength)+moment])
-			grains.append(grain)
+	grainLength=int(grainLength)
+	freqAdjGrainLength=freqInc*grainLength
+	grains=[]
+	for section in range(len(durRay)/grainLength):
 		grain=[]
-		for moment in range(len(durRay)-((len(durRay)/grainLength)*grainLength)):
-			grain.append(durRay[moment+((len(durRay)/grainLength)*grainLength)])
+		for moment in range(int(freqAdjGrainLength)):
+			if len(durRay)>((section*grainLength)+moment):
+				grain.append(durRay[(section*grainLength)+moment])
 		grains.append(grain)
-		if fade:
-			for grain in range(len(grains)):
-				if len(grains[grain]):
+	grain=[]
+	for moment in range(len(durRay)-((len(durRay)/grainLength)*grainLength)):
+		grain.append(durRay[moment+((len(durRay)/grainLength)*grainLength)])
+	grains.append(grain)
+	if fade:
+		for grain in range(len(grains)):
+			if len(grains[grain]):
+				if len(grains[grain])>30:
 					grains[grain]=changeSpeed(grains[grain],freqInc)
 					grains[grain]=fadeOut(grains[grain],beginning=(len(grains[grain])-30))
 					grains[grain]=fadeIn(grains[grain],ending=30)
-		else:
-			for grain in range(len(grains)):
-				if len(grains[grain]):
+				else:
 					grains[grain]=changeSpeed(grains[grain],freqInc)
-		outRay=[]
-		for grain in grains:
-			for moment in grain:
-				outRay.append(moment)
-		return outRay
-	except:
-		print 'IT BROKE!!!!!', grainLength
+					grains[grain]=fadeOut(grains[grain])
+					grains[grain]=fadeIn(grains[grain])
+	else:
+		for grain in range(len(grains)):
+			if len(grains[grain]):
+				grains[grain]=changeSpeed(grains[grain],freqInc)
+	outRay=[]
+	for grain in grains:
+		for moment in grain:
+			outRay.append(moment)
+	return outRay
+
+def grainMake(durRay,freqInc,grainLength,grainRate,fade=True):
+	grainLength=int(grainLength)
+	grains=[]
+	for time in range(len(durRay)/grainRate):
+		grain = []
+		spot = time*grainRate
+		distance = 0
+		while (len(durRay)-1)>(spot+distance) and distance<grainLength:
+			grain.append(durRay[(time*grainRate)+distance])
+			distance+=1
+		grains.append(grain)
+	if fade:
+		for grain in range(len(grains)):
+			if len(grains[grain]):
+				if len(grains[grain])>30:
+					grains[grain]=changeSpeed(grains[grain],freqInc)
+					grains[grain]=fadeOut(grains[grain],beginning=(len(grains[grain])-30))
+					grains[grain]=fadeIn(grains[grain],ending=30)
+				else:
+					grains[grain]=changeSpeed(grains[grain],freqInc)
+					grains[grain]=fadeOut(grains[grain])
+					grains[grain]=fadeIn(grains[grain])
+	else:
+		for grain in range(len(grains)):
+			if len(grains[grain]):
+				grains[grain]=changeSpeed(grains[grain],freqInc)
+	outRay=[]
+	for time in [0]*len(durRay):
+		outRay.append(0.)
+	for grainIndex in range(len(grains)):
+		for moment in range(len(grains[grainIndex])):
+			outRay[(grainIndex*grainRate)+moment]+=grains[grainIndex][moment]
+	return outRay
+
+def grabGrain(durRay,beginning,end):
+	return durRay[beginning:end]
+
+def countEveryZero(durRay,zero=0):
+	numberOfZeroes=0
+	for element in durRay:
+		if math.fabs(element)<=zero:
+			numberOfZeroes+=1
+	return numberOfZeroes
+
+def cutUpEveryGrain(durRay,amplitudeThreshold):
+	grains=[]
+	beginning=0
+	ending=''
+	for moment in range(1,len(durRay)):
+		if math.fabs(durRay[moment])<=amplitudeThreshold:
+			ending=moment
+			grains.append(durRay[beginning:ending])
+			beginning=moment
+	return grains
 
 def grabSample(durRay,sampleLength):
 	sampleLength=int(sampleLength)
