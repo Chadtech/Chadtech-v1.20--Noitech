@@ -732,7 +732,7 @@ def grabSample(durRay,sampleLength):
 		outRay.append(durRay[whichPart+moment])
 	return outRay
 
-def pixelate(durRay,fileName):
+def pixelate0(durRay,fileName):
 	width = 1000
 	heigh = 750
 	wavImage = Image.new('RGB',(width,heigh),(0,0,0))
@@ -746,7 +746,41 @@ def pixelate(durRay,fileName):
 		wavImage.putpixel((moment%width,moment/width),(0,(fourt*16)+third,(secon*16)+first))
 	wavImage.save(fileName+'.PNG','png')
 
-
+def pixelate1(durRay,fileName):
+	values = []
+	for moment in range(len(durRay)):
+		sampleValue = durRay[moment]+32767
+		first, secon, third,fourt, fifth = 0,0,0,0,0
+		first+=sampleValue%16
+		secon+=(sampleValue/16)%16
+		third+=(sampleValue/256)%16
+		fourt+=(sampleValue/4096)%16
+		values.append(first)
+		values.append(secon)
+		values.append(third)
+		values.append(fourt)
+	width = 1000
+	heigh = 750
+	wavImage = Image.new('RGB',(width,heigh),(0,0,0))
+	pixel=0
+	for value in range(len(values)):
+		if value%6==0:
+			redDatum,greenDatum,blueDatum = 0,0,0
+			redDatum+=values[value]*16
+		elif value%6==1:
+			redDatum+=values[value]
+		elif value%6==2:
+			greenDatum+=values[value]*16
+		elif value%6==3:
+			greenDatum+=values[value]
+		elif value%6==4:
+			blueDatum+=values[value]*16
+		elif value%6==5:
+			blueDatum+=values[value]
+			wavImage.putpixel((pixel%width,pixel/width),(redDatum,greenDatum,blueDatum))
+			pixel+=1
+	wavImage.putpixel((pixel%width,pixel/width),(redDatum,greenDatum,blueDatum))
+	wavImage.save(fileName+'.PNG','png')
 
 def declip(durRay,margin=30):
 	return fadeIn(fadeOut(durRay,len(durRay)-margin,len(durRay)),0,margin)
