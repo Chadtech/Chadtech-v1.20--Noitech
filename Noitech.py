@@ -304,9 +304,9 @@ def buildFile(fileName,firstChannel,secondChannel=''): #Turns input 'song' into 
 		output.setparams((2, 2, sampleRate, 0, 'NONE', 'not compressed'))
 		durationAdjustedFirstChannel =[]
 		durationAdjustedSecondChannel=[]
-		##### The channels need to be the same length, otherwise there will be problems
+	##### The channels need to be the same length, otherwise there will be problems
 		if len(firstChannel)!=len(secondChannel):
-			##### If one channel is longer than the other, we create two new channels and fill them with the old ones, but fill in the end of the second one with silence
+	##### If one channel is longer than the other, we create two new channels and fill them with the old ones, but fill in the end of the second one with silence
 			if len(firstChannel)>len(secondChannel):
 				for moment in range(len(secondChannel)):
 					durationAdjustedFirstChannel.append(firstChannel[moment])
@@ -321,14 +321,14 @@ def buildFile(fileName,firstChannel,secondChannel=''): #Turns input 'song' into 
 				for moment in range(int(math.fabs(len(firstChannel)-len(secondChannel)))):
 					durationAdjustedSecondChannel.append(secondChannel[moment+(len(secondChannel)-(int(math.fabs(len(firstChannel)-len(secondChannel)))))])
 					durationAdjustedFirstChannel.append(0)
-			##### Make sure the amplitudes of the channels are within the range 2 bytes
+	##### Make sure the amplitudes of the channels are within the range 2 bytes
 			for channel in [durationAdjustedFirstChannel,durationAdjustedSecondChannel]:
 				for moment in range(len(channel)):
 					if channel[moment] > 32767:
 						channel[moment]=32767
 					elif channel[moment] < -32767:
 						channel[moment]=-32767
-			##### Put the chanels in the file
+	##### Put the chanels in the file
 			for moment in range(len(durationAdjustedFirstChannel)):
 				packedValue = struct.pack('h', durationAdjustedFirstChannel[moment])
 				output.writeframesraw(packedValue)
@@ -346,7 +346,7 @@ def buildFile(fileName,firstChannel,secondChannel=''): #Turns input 'song' into 
 						channel[moment]=32767
 					elif channel[moment] < -32767:
 						channel[moment]=-32767
-			##### Put the chanels in the file
+	##### Put the chanels in the file
 			for moment in range(len(firstChannel)):
 				packedValue = struct.pack('h', firstChannel[moment])
 				output.writeframesraw(packedValue)
@@ -731,6 +731,22 @@ def grabSample(durRay,sampleLength):
 	for moment in range(sampleLength):
 		outRay.append(durRay[whichPart+moment])
 	return outRay
+
+def pixelate(durRay,fileName):
+	width = 1000
+	heigh = 750
+	wavImage = Image.new('RGB',(width,heigh),(0,0,0))
+	for moment in range(len(durRay)):
+		value = durRay[moment]+32767
+		first, secon, third,fourt, fifth = 0,0,0,0,0
+		first+=value%16
+		secon+=(value/16)%16
+		third+=(value/256)%16
+		fourt+=(value/4096)%16
+		wavImage.putpixel((moment%width,moment/width),(0,(fourt*16)+third,(secon*16)+first))
+	wavImage.save(fileName+'.PNG','png')
+
+
 
 def declip(durRay,margin=30):
 	return fadeIn(fadeOut(durRay,len(durRay)-margin,len(durRay)),0,margin)
