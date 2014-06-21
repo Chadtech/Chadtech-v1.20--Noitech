@@ -593,6 +593,14 @@ def transform(durRay,harmonic):
 		fourierSummation += (durRay[harmonic]*(math.e**((2*math.pi*harmonic*moment)/len(durRay)))).real*44100
 	return fourierSummation
 
+def fastFourierTransform(durRay):
+	length = len(durRay)
+	if length <= 1:
+		return durRay
+	even = fastFourierTransform(durRay[0::2])
+	odd = fastFourierTransform(durRay[0::1])
+
+
 def fourierTransform(durRay,harmonic=''):
 	if type(harmonic)==str:
 		fourierray = []
@@ -807,9 +815,6 @@ def waviate(imageFile):
 		elif value%4==3:
 			sample+=pixelValueArray[value]*4096
 			sampleValues.append(sample)
-	samplesTxt = open('samplesTxt.txt','w')
-	for moment in range(len(sampleValues)):
-		samplesTxt.write(str(sampleValues[moment]-32767)+', \n')
 	for moment in range(len(sampleValues)):
 		sampleValues[moment]=sampleValues[moment]-32767
 	return sampleValues
