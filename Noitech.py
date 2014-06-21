@@ -782,6 +782,45 @@ def pixelate1(durRay,fileName):
 	wavImage.putpixel((pixel%width,pixel/width),(redDatum,greenDatum,blueDatum))
 	wavImage.save(fileName+'.PNG','png')
 
+def waviate(imageFile):
+	score = Image.open(imageFile)
+	width,heigh = score.size
+	pixelValueArray = []
+	for pixel in range((width*heigh)-1):
+		redDatum,greenDatum,blueDatum = score.getpixel((pixel%width,pixel/width))
+		pixelValueArray.append(redDatum/16)
+		pixelValueArray.append(redDatum%16)
+		pixelValueArray.append(greenDatum/16)
+		pixelValueArray.append(greenDatum%16)
+		pixelValueArray.append(blueDatum/16)
+		pixelValueArray.append(blueDatum%16)
+	sample=0
+	sampleValues = []
+	for value in range(len(pixelValueArray)):
+		if value%4==0:
+			sample=0
+			sample+=pixelValueArray[value]
+		elif value%4==1:
+			sample+=pixelValueArray[value]*16
+		elif value%4==2:
+			sample+=pixelValueArray[value]*256
+		elif value%4==3:
+			sample+=pixelValueArray[value]*4096
+			sampleValues.append(sample)
+	samplesTxt = open('samplesTxt.txt','w')
+	for moment in range(len(sampleValues)):
+		samplesTxt.write(str(sampleValues[moment]-32767)+', \n')
+	for moment in range(len(sampleValues)):
+		sampleValues[moment]=sampleValues[moment]-32767
+	return sampleValues
+
+def intoTxt(txtName,wavToOpen):
+	durRay=openFile(wavToOpen)
+	wavTxt = open(txtName,'w')
+	for moment in durRay:
+		wavTxt.write(str(moment)+'\n')
+	wavTxt.close()
+
 def declip(durRay,margin=30):
 	return fadeIn(fadeOut(durRay,len(durRay)-margin,len(durRay)),0,margin)
 
