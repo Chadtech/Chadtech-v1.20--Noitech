@@ -839,26 +839,28 @@ def reverbBackPass(durRay,dK,delays=[1116,1188,1356,1277,1422,1491,1617,1557]):
 		outRay[moment]-=durRay[moment]
 	return outRay
 
-def reverbForwardPass(durRay,undelays=[255,556,441,341]):
+def reverbForwardPass(durRay,dKTw,undelays=[255,556,441,341]):
 	manyRays=[]
-	for time in [0]*len(undelays):
+	for time in range(len(undelays)):
 		manyRays.append([])
-		for sample in range(len(durRay)):
-			manyRays[len(manyRays)-1].append(durRay[sample])
+		manyRays[len(manyRays)-1]+=[0]*undelays[time]
+		manyRays[len(manyRays)-1]+=durRay
 	for array in range(len(manyRays)):
-		manyRays[array]=([0]*(undelays[array]+1))+manyRays[array]
-		for moment in range(len(manyRays[array])):
-			manyRays[array][moment]+=manyRays[array][moment+undelays[array]]
-	outRay=[0]*max(manyRays)
+		for moment in range(len(durRay)):
+			manyRays[array][moment]+=manyRays[array][moment+undelays[array]]*dKTw
+	outRay=[0]*(max(undelays)+len(durRay))
 	for array in range(len(manyRays)):
 		for moment in range(len(manyRays[array])):
 			outRay[moment]+=manyRays[array][moment]/float(len(manyRays))
 	return outRay
 
-def reverb(durRay,dK,passes):
+def reverb(durRay,dK,dKTw,passes):
+	outRay=[]
+	for time in range(len(durRay)):
+		outRay.append(durRay[time])
 	for time in [0]*passes:
-		durRay=reverbForwardPass(reverbBackPass(durRay,dK))
-	return durRay
+		outRay=reverbForwardPass(reverbBackPass(outRay,dK),dKTw)
+	return outRay
 
 def intoTxt(txtName,wavToOpen):
 	durRay=openFile(wavToOpen)
