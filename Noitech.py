@@ -819,10 +819,9 @@ def waviate(imageFile):
 		sampleValues[moment]=sampleValues[moment]-32767
 	return sampleValues
 
-def reverbBackPass(durRay,dK):
+def reverbBackPass(durRay,dK,delays=[1116,1188,1356,1277,1422,1491,1617,1557]):
 	manyRays=[]
-	delays=[1116,1188,1356,1277,1422,1491,1617,1557]
-	for time in 8*[0]:
+	for time in len(delays)*[0]:
 		manyRays.append([])
 		for sample in range(len(durRay)):
 			manyRays[len(manyRays)-1].append(durRay[sample])
@@ -836,14 +835,29 @@ def reverbBackPass(durRay,dK):
 	for array in range(len(manyRays)):
 		for moment in range(len(manyRays[array])):
 			outRay[moment]+=manyRays[array][moment]/float(len(manyRays))
+	for moment in range(len(durRay)):
+		outRay[moment]-=durRay[moment]
 	return outRay
 
-def reverbForwardPass(durRay):
-
+def reverbForwardPass(durRay,undelays=[255,556,441,341]):
+	manyRays=[]
+	for time in [0]*len(undelays):
+		manyRays.append([])
+		for sample in range(len(durRay)):
+			manyRays[len(manyRays)-1].append(durRay[sample])
+	for array in range(len(manyRays)):
+		manyRays[array]=([0]*(undelays[array]+1))+manyRays[array]
+		for moment in range(len(manyRays[array])):
+			manyRays[array][moment]+=manyRays[array][moment+undelays[array]]
+	outRay=[0]*max(manyRays)
+	for array in range(len(manyRays)):
+		for moment in range(len(manyRays[array])):
+			outRay[moment]+=manyRays[array][moment]/float(len(manyRays))
+	return outRay
 
 def reverb(durRay,dK,passes):
 	for time in [0]*passes:
-		durRay=reverbPass(durRay,dK)
+		durRay=reverbForwardPass(reverbBackPass(durRay,dK))
 	return durRay
 
 def intoTxt(txtName,wavToOpen):
