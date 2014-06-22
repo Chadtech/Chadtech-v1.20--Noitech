@@ -819,6 +819,33 @@ def waviate(imageFile):
 		sampleValues[moment]=sampleValues[moment]-32767
 	return sampleValues
 
+def reverbBackPass(durRay,dK):
+	manyRays=[]
+	delays=[1116,1188,1356,1277,1422,1491,1617,1557]
+	for time in 8*[0]:
+		manyRays.append([])
+		for sample in range(len(durRay)):
+			manyRays[len(manyRays)-1].append(durRay[sample])
+	for array in range(len(manyRays)):
+		for extraSpace in delays[array]*[0]:
+			manyRays[array].append(0)
+		manyRays[array].append(0)
+		for moment in range(len(durRay)):
+			manyRays[array][moment+delays[array]]+=manyRays[array][moment]*dK
+	outRay=[0]*(max(delays)+len(durRay)+1)
+	for array in range(len(manyRays)):
+		for moment in range(len(manyRays[array])):
+			outRay[moment]+=manyRays[array][moment]/float(len(manyRays))
+	return outRay
+
+def reverbForwardPass(durRay):
+
+
+def reverb(durRay,dK,passes):
+	for time in [0]*passes:
+		durRay=reverbPass(durRay,dK)
+	return durRay
+
 def intoTxt(txtName,wavToOpen):
 	durRay=openFile(wavToOpen)
 	wavTxt = open(txtName,'w')
