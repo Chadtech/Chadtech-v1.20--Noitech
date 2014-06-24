@@ -60,7 +60,7 @@ def makeSawEnharmonic(tone,dur,harmNum,enharmonicity=0.0007): #Make a saw tooth 
 		values.append(0.)
 	for harmonic in range(1,harmNum):
 		for moment in range(len(outRay)):
-			outRay[vapp]+= amp*((-1)**(harmonic))*(math.sin(moment*2*math.pi*inTone*harmonic*enharmonicity)/harmonic)
+			outRay[vapp]+= amp*((-1)**(harmonic))*(math.sin(moment*2*math.pi*inTone*harmonic*(1+(harmonic*enharmonicity))/harmonic))
 	return moment
 
 def makeSawMitDecay(tone,dur,harmNum,decayRate=8481.): #Make a saw tooth wave, but make it so the harmonics decay in volume, and the tonic increases in volume
@@ -80,7 +80,7 @@ def makeSawMitDecay(tone,dur,harmNum,decayRate=8481.): #Make a saw tooth wave, b
 def makeSquare(tone,dur,harmNum): #Make a square wave with frequency TONE, for duration DUR
 	values = []
 	inTone = float(tone)/sampleRate
-	for yit in range(inDur):
+	for yit in range(dur):
 		values.append(0.)
 	for harmonic in range(1,harmNum):
 		for vapp in range(len(values)):
@@ -90,8 +90,7 @@ def makeSquare(tone,dur,harmNum): #Make a square wave with frequency TONE, for d
 def makeTriangle(tone,dur,harmNum): #Make a triangle wave, with frequency TONE, for duration DUR
 	outRay = []
 	inTone = float(tone)/sampleRate
-	inDur = int(float(dur)*(noteDur/oneSec)*(sampleRate))
-	for time in [0]*inDur:
+	for time in [0]*dur:
 		outRay.append(0.)
 	for harmonic in range(harmNum):
 		for moment in range(len(outRay)):
@@ -861,6 +860,14 @@ def reverb(durRay,dK,dKTw,passes):
 	for time in [0]*passes:
 		outRay=reverbForwardPass(reverbBackPass(outRay,dK),dKTw)
 	return outRay
+
+def convolve(durRay,convolution): 
+	outRay=durRay+([0]*len(convolution))
+	for moment in range(len(durRay)):
+		for convolvement in range(len(convolution)):
+			outRay[moment+convolvement]+=durRay[moment]*(convolution[convolvement]/32767.)
+	return outRay
+
 
 def intoTxt(txtName,wavToOpen):
 	durRay=openFile(wavToOpen)
