@@ -20,16 +20,6 @@ speedOfSound = 340.49/sampleRate
 songDur = (barNum*(noteDur/oneSec))*sampleRate
 fileName = ''
 
-######## 'Dur' is short for 'Duration'
-######## 'inDur' is the duration converted into samples
-####
-
-class Noitech():
-	def __init__(self,sampleRate=44100,amplitude=32767,noteLength=400.):
-		self.sampleRate=sampleRate
-		self.amplitude=ampltitude
-		self.noteLength=noteLength
-
 #------------------------------Tone making
 
 
