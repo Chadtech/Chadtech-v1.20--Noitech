@@ -165,13 +165,17 @@ def givDur(barNum,dur): #Returns the duration in samples, given the number of ba
 	return (noteDur/oneSec*sampleRate)*dur
 
 def addTo(durRay,canvasRay,whereAt=0,level=1000.): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
-	outRay=[]
-	for moment in [0]*len(canvasRay):
-		outRay.append(0.)
+	outRay=[0]*len(canvasRay)
 	for moment in range(len(canvasRay)):
 		outRay[moment]=canvasRay[moment]
 	for moment in range(len(durRay)):
 		outRay[moment+int(whereAt)]+=int((durRay[moment]*(level/1000.)))
+	return outRay
+
+def substitute(durRay,canvasRay, whereAt=0,level=1,canvaslevel=0.1):
+	outRay=[0]*len(canvasRay)
+	for momnt in range(len(durRay)):
+		outRay[moment+int(whereAt)]=(outRay[moment+int(whereAt)]*canvasLevel)+(durRay[moment]*level)
 	return outRay
 
 def removeFrom(whereAt,durRay,canvasRay,level=1000.): #whereAt is (WhichBar, which of noteDiv*barNum in whichbar), function adds input array to song array starting at whereAt. 
@@ -702,6 +706,16 @@ def grainMake(durRay,freqInc,grainLength,grainRate,fade=True):
 def grabGrain(durRay,beginning,end):
 	return durRay[beginning:end]
 
+def quietReducer(durRay,degree):
+	outRay=len(durRay)*[0]
+	for moment in range(len(outRay)):
+		if durRay[moment]>0:
+			outRay[moment]=durRay[moment]*((durRay[moment]/32767)**(1+degree))
+		else:
+			outRay[moment]=durRay[moment]*((durRay[moment]/32767)**(1+degree))*(-1)
+	return outRay
+
+
 def countEveryZero(durRay,zero=0):
 	numberOfZeroes=0
 	for element in durRay:
@@ -851,13 +865,13 @@ def reverb(durRay,dK,dKTw,passes):
 		outRay=reverbForwardPass(reverbBackPass(outRay,dK),dKTw)
 	return outRay
 
-def convolve(durRay,convolution): 
+def convolve(durRay,convolution,level): 
 	outRay=durRay+([0]*len(convolution))
 	for moment in range(len(durRay)):
+		print 'MOMENT : ', moment, 'LEN DURRAY', len(durRay)
 		for convolvement in range(len(convolution)):
-			outRay[moment+convolvement]+=durRay[moment]*(convolution[convolvement]/32767.)
+			outRay[moment+convolvement]+=(durRay[moment]*(convolution[convolvement]/32767.))*level
 	return outRay
-
 
 def intoTxt(txtName,wavToOpen):
 	durRay=openFile(wavToOpen)
